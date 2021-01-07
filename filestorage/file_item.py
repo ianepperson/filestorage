@@ -6,7 +6,7 @@ from typing import NamedTuple, Optional, Tuple
 
 class FileItem(NamedTuple):
     filename: str
-    path: Tuple[str, ...]
+    path: Tuple[str, ...] = tuple()
     data: Optional[io.BytesIO] = None
 
     def __repr__(self) -> str:

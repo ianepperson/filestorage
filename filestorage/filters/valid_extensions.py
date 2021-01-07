@@ -1,8 +1,8 @@
 import os
 from typing import List
 
-from filestorge import FilterBase, FileItem
-from filestorge.exceptions import FileExtensionNotAllowed
+from filestorage import FilterBase, FileItem
+from filestorage.exceptions import FileExtensionNotAllowed
 
 
 class ValidateExtension(FilterBase):
