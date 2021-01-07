@@ -36,7 +36,7 @@ class FileItem(NamedTuple):
         new_values.update(kwargs)
         return FileItem(**new_values)
 
-    def sync_read(self, size: int = 1) -> bytes:
+    def sync_read(self, size: int = -1) -> bytes:
         if self.data is None:
             return b''
 
@@ -46,7 +46,7 @@ class FileItem(NamedTuple):
         else:
             return self.data.read(size)
 
-    async def async_read(self, size: int = 1) -> bytes:
+    async def async_read(self, size: int = -1) -> bytes:
         if self.data is None:
             return b''
 

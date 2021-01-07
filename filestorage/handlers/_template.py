@@ -14,7 +14,7 @@ class NewStorageHandler(StorageHandlerBase):
         # perform any other necessary setup steps.
         # At this point, the handlers may not be fully configured, so don't do
         # too much here.
-        super().__init__(self, **kwargs)
+        super().__init__(**kwargs)
         pass
 
     def _validate(self) -> None:

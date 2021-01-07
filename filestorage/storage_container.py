@@ -1,4 +1,4 @@
-import asyncio
+from asyncio import gather, get_event_loop, isfuture, iscoroutine
 from typing import Awaitable, List, Optional
 
 from .exceptions import FilestorageConfigError
@@ -66,14 +66,18 @@ class StorageContainer:
     @handler.setter
     def handler(self, handler: StorageHandlerBase) -> None:
         """Set the handler for this store"""
+        if self._finalized:
+            raise FilestorageConfigError(
+                f'Setting store{self.name}.handler: store already finalized!'
+            )
         if self._handler is not None:
             raise FilestorageConfigError(
-                f'Setting store{self.name}.handler: ' 'handler already set!'
+                f'Setting store{self.name}.handler: handler already set!'
             )
         if not isinstance(handler, StorageHandlerBase):
             raise FilestorageConfigError(
                 f'Setting store{self.name}.handler: '
-                '{handler} is not a StorageHandler'
+                f'{handler!r} is not a StorageHandler'
             )
         # Inject the handler name
         handler.handler_name = self._name
@@ -88,12 +92,13 @@ class StorageContainer:
         If any of the validation returns a coroutine, add it to the coroutines
         list for running in parallel.
         """
-        if self.finalized:
+        if self._finalized:
             return
+        self._finalized = True
 
         if self._handler is None:
             raise FilestorageConfigError(
-                f'No handler provided for store {self.name}'
+                f'No handler provided for store{self.name}'
             )
 
         # Indicate that this instance of the method should await any coroutines
@@ -103,7 +108,7 @@ class StorageContainer:
             coroutines = []
 
         result = self._handler.validate()
-        if asyncio.iscoroutine(result):
+        if iscoroutine(result) or isfuture(result):
             coroutines.append(result)
 
         for child in self._children.values():
@@ -111,9 +116,9 @@ class StorageContainer:
 
         if should_await and coroutines:
             # Get the coroutines to run in parallel
-            results = asyncio.gather(*coroutines)
+            results = gather(*coroutines)
             # Run them to completion before returning (synchronously)
-            event_loop = asyncio.get_event_loop()
+            event_loop = get_event_loop()
             event_loop.run_until_complete(results)
 
     def subfolder(self, folder_name: str) -> SubFolder:

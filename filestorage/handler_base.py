@@ -1,7 +1,7 @@
-import asyncio
 import io
 import urllib
 from abc import ABC, abstractmethod
+from asyncio import gather, isfuture, iscoroutine
 from typing import (
     Awaitable,
     Callable,
@@ -33,23 +33,32 @@ class StorageHandlerBase(ABC):
         self,
         base_url: Optional[str] = None,
         filters: Optional[List[FilterBase]] = None,
-        path: Optional[Tuple[str]] = None,
+        path: Union[Tuple[str, ...], List[str], str, None] = None,
     ):
         self.handler_name = None
         self._base_url = base_url
         self._filters = filters or []
-        self._path = path or tuple()
+
+        # It's a bit too easy to monkey up creating a tuple. Allow the library
+        # users to provide a path in a couple of different ways.
+        self._path: Tuple[str, ...]
+        if isinstance(path, str):
+            self._path = (path,)
+        elif path:
+            self._path = tuple(path)
+        else:
+            self._path = tuple()
 
     @property
     def base_url(self) -> str:
-        return self._base_url
+        return self._base_url or ''
 
     @property
-    def folder(self) -> str:
+    def path(self) -> Tuple[str, ...]:
         return self._path
 
     def __str__(self):
-        return f'{self.__class__.__name__}("{self.handler_name}")'
+        return f'<{self.__class__.__name__}("{self.handler_name}")>'
 
     def validate(self) -> Optional[Awaitable]:
         """Validate that the configuration is set up properly and the necessary
@@ -61,16 +70,16 @@ class StorageHandlerBase(ABC):
         # Verify that any provided filters are valid.
         for filter_ in self._filters:
             result = filter_.validate()
-            if asyncio.iscoroutine(result):
+            if iscoroutine(result) or isfuture(result):
                 coroutines.append(result)
 
         result = self._validate()
-        if asyncio.iscoroutine(result):
+        if iscoroutine(result) or isfuture(result):
             coroutines.append(result)
 
         if not coroutines:
             return
-        return asyncio.gather(*coroutines)
+        return gather(*coroutines)
 
     def _validate(self) -> None:
         """Validate any subclass."""
@@ -81,7 +90,7 @@ class StorageHandlerBase(ABC):
         filename: str,
         subpath: Optional[Tuple[str, ...]] = None,
         data: Optional[io.BytesIO] = None,
-    ):
+    ) -> FileItem:
         path = self._path
         if subpath is not None:
             path = subpath + self._path
@@ -153,7 +162,7 @@ class StorageHandlerBase(ABC):
 
     def save_file(self, data: 'io.BytesIO', filename: str) -> str:
         """Verifies that the provided filename is legitimate and saves it to
-        the storage container, randomizing it if necessary.
+        the storage container.
 
         Returns the filename that was saved.
         """
@@ -172,7 +181,7 @@ class StorageHandlerBase(ABC):
 
     def save_field(self, field: 'cgi.FieldStorage') -> str:
         """Save a file stored in a CGI field."""
-        return self.save_file(field.file, field.filename)
+        return self.save_file(field.file, field.filename or 'file')
 
     SaveDataMethodType = Callable[[bytes, str], MaybeAwaitStr]
 
@@ -213,7 +222,7 @@ class SubFolder(StorageHandlerBase):
         return self.subfolder(other)
 
     def update_file_item(self, item: FileItem) -> FileItem:
-        new_path = self._store.handler._path + self._path
+        new_path = self._store.handler.path + self._path
         return FileItem(filename=item.filename, path=new_path, data=item.data)
 
     def _exists(self, item: FileItem) -> bool:
@@ -243,7 +252,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         """
         # Verify that any provided filters are ok to use.
         for filter_ in self._filters:
-            if not filter.async_ok:
+            if not filter_.async_ok:
                 raise FilestorageConfigError(
                     f'Filter {filter_} cannot be used in '
                     f'asynchronous storage handler {self}'
@@ -275,7 +284,9 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
 
     async def save_file(self, data: 'io.IOBase', filename: str) -> str:
         """Verifies that the provided filename is legitimate and saves it to
-        the storage container, randomizing it if necessary.
+        the storage container.
+
+        Returns the filename that was saved.
         """
         filename = self.sanitize_filename(filename)
         item = self.get_item(filename, data=data)

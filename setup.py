@@ -24,6 +24,9 @@ setuptools.setup(
     install_requires=[],
     tests_require=[
         'pytest',
+        'mock',
+        'pytest-asyncio',
+        'pytest-mock',
     ],
     extras_require={
         'aio_file': ['aiofiles'],

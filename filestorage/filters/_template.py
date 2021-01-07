@@ -28,4 +28,7 @@ class NewFilter(FilterBase):
         # Perform any mutation of the filename or the file contents held within
         # the FileItem object. Return either the original item or a new
         # FileItem.
+        # To easily make a new copy with updated members, for example:
+        #     return item.copy(filename='new_name')
+        #     return item.copy(data=BytesIO(b'new content'))
         return item
