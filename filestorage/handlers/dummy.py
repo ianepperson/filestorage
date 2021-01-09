@@ -25,7 +25,7 @@ class DummyHandler(StorageHandlerBase):
         """Indicate if the given file exists within the given folder."""
         return item.url_path in self.files
 
-    def assert_exists(self, filename: str, path: Tuple[str]) -> None:
+    def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None:
         """Assert that the given file exists in the dummy file system."""
         assert self._exists(FileItem(filename=filename, path=path))
 
@@ -39,7 +39,7 @@ class DummyHandler(StorageHandlerBase):
         return None
 
     def assert_file_contains(
-        self, filename: str, path: Tuple[str], data: bytes
+        self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None:
         """Assert that the given file contains the given data."""
         item = FileItem(filename=filename, path=path)
@@ -74,7 +74,7 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """Indicate if the given file exists within the given folder."""
         return item.url_path in self.files
 
-    def assert_exists(self, filename: str, path: Tuple[str]) -> None:
+    def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None:
         """Assert that the given file exists in the dummy file system."""
         assert self._exists(FileItem(filename=filename, path=path))
 
@@ -88,7 +88,7 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         return None
 
     def assert_file_contains(
-        self, filename: str, path: Tuple[str], data: bytes
+        self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None:
         """Assert that the given file contains the given data."""
         item = FileItem(filename=filename, path=path)

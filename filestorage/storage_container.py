@@ -51,7 +51,12 @@ class StorageContainer(Folder):
 
     @property
     def sync_handler(self) -> StorageHandlerBase:
-        return cast(StorageHandlerBase, self.handler)
+        handler = self.handler
+        if handler is None:
+            raise FilestorageConfigError(
+                f'No handler provided for store{self.name}'
+            )
+        return cast(StorageHandlerBase, handler)
 
     @property
     def async_handler(self) -> AsyncStorageHandlerBase:
@@ -64,7 +69,11 @@ class StorageContainer(Folder):
         return cast(AsyncStorageHandlerBase, handler)
 
     @property
-    def handler(self) -> Union[StorageHandlerBase, AsyncStorageHandlerBase]:
+    def handler(
+        self,
+    ) -> Union[StorageHandlerBase, AsyncStorageHandlerBase, None]:
+        if self._do_not_use:
+            return None
         if self._handler is None:
             raise FilestorageConfigError(
                 f'No handler provided for store{self.name}'
@@ -72,42 +81,26 @@ class StorageContainer(Folder):
         return self._handler
 
     @handler.setter
-    def handler(self, handler: StorageHandlerBase) -> None:
+    def handler(self, handler: Optional[StorageHandlerBase]) -> None:
         """Set the handler for this store"""
         if self._finalized:
             raise FilestorageConfigError(
                 f'Setting store{self.name}.handler: store already finalized!'
             )
-        if self._do_not_use:
-            raise FilestorageConfigError(
-                f'Setting store{self.name}.handler: do_not_use already set!'
-            )
-        if self._handler is not None:
-            raise FilestorageConfigError(
-                f'Setting store{self.name}.handler: handler already set!'
-            )
+        if handler is None:
+            self._handler = None
+            self._do_not_use = True
+            return
+
         if not isinstance(handler, StorageHandlerBase):
             raise FilestorageConfigError(
                 f'Setting store{self.name}.handler: '
                 f'{handler!r} is not a StorageHandler'
             )
+        self._do_not_use = False
         # Inject the handler name
         handler.handler_name = self._name
         self._handler = handler
-
-    def set_do_not_use(self) -> None:
-        """Indicate that this container should not be used."""
-        if self._finalized:
-            raise FilestorageConfigError(
-                f'Setting store{self.name}.set_do_not_use(): '
-                'store already finalized!'
-            )
-        if self._handler is not None:
-            raise FilestorageConfigError(
-                f'Setting store{self.name}.set_do_not_use(): '
-                'a handler is already set!'
-            )
-        self._do_not_use = True
 
     def finalize_config(
         self, coroutines: Optional[List[Awaitable]] = None
@@ -119,7 +112,6 @@ class StorageContainer(Folder):
         """
         if self._finalized:
             return
-        self._finalized = True
 
         if self._do_not_use:
             return
@@ -149,10 +141,16 @@ class StorageContainer(Folder):
             event_loop = get_event_loop()
             event_loop.run_until_complete(results)
 
+        self._finalized = True
+
     def __getitem__(self, key: str) -> 'StorageContainer':
         """Get or create a storage container as a lookup.
         The provided container will be lazily configured.
         """
+        if self._finalized and key not in self._children:
+            raise FilestorageConfigError(
+                f'Getting store{self.name}[{key!r}]: store already finalized!'
+            )
         return self._children.setdefault(
             key, StorageContainer(name=key, parent=self)
         )

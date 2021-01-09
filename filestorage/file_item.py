@@ -33,13 +33,13 @@ class FileItem(NamedTuple):
 
         return FileItem(filename=filename, path=path, data=data)
 
-    def sync_read(self, size: int = -1) -> bytes:
+    def sync_read(self, size: Optional[int] = -1) -> bytes:
         if self.data is None:
             return b''
 
         return utils.any_to_sync(self.data.read)(size)
 
-    async def async_read(self, size: int = -1) -> bytes:
+    async def async_read(self, size: Optional[int] = -1) -> bytes:
         if self.data is None:
             return b''
 
