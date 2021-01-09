@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup  # type: ignore
 
 with open('README.md', 'r', encoding='utf-8') as readme:
     long_description = readme.read()
@@ -13,7 +13,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/ianepperson/filestorage',
-    packages=find_packages(),
+    packages=['filestorage', 'filestorage.filters', 'filestorage.handlers'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
@@ -21,6 +21,12 @@ setup(
     ],
     python_requires='>=3.5',
     platforms='any',
+    package_data={
+        'filestorage': ['*.pyi', 'py.typed'],
+        'filestorage.filters': ['*.pyi', 'py.typed'],
+        'filestorage.handlers': ['*.pyi', 'py.typed'],
+    },
+    include_package_data=True,
     install_requires=['asgiref'],
     extras_require={
         'aio_file': ['aiofiles'],
