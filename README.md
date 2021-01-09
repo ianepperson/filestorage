@@ -1,2 +1,385 @@
 # filestorage
-Python library to make storing files simple
+A Python library to make storing files simple and easy.
+
+It is primarily intended to deal with file uploads to a static files directory or an object service like
+[AWS S3](https://aws.amazon.com/s3/?nc2=h_ql_prod_st_s3) or [Linode](https://www.linode.com/products/object-storage/).
+Files can by stored synchronously (for [WSGI](https://wsgi.readthedocs.io/en/latest/index.html) servers
+like [Django](https://www.djangoproject.com/) or [Pyramid](https://trypyramid.com/)) or asynchronously
+(for [ASGI](https://asgi.readthedocs.io/en/latest/) servers like [Starlette](https://www.starlette.io/),
+[FastAPI](https://fastapi.tiangolo.com/) or [Django Channels](https://channels.readthedocs.io/en/stable/)).
+
+Supports multiple storage services simultaneously or even the same service with multiple configurations.
+
+Upload filters are trivial to create and a few [are included](#filters) by default.
+
+## Introduction
+
+### Installation {#installation}
+
+The library is available through the [Python Package Index](https://pypi.org/project/filestorage/) and can be installed with pip.
+
+```bash
+pip install filestorage
+```
+
+Different handlers have additional library requirements that can be optionally installed. For instance, the [async local file handler](#asynclocalfilehandler) requirements can be installed using:
+
+```base
+pip install filestorage[aio_file]
+```
+
+The extras are:
+ * `aio_file` - requirements for async local file handling.
+ * `s3` - requirements for storing to an AWS S3 bucket.
+ * `aio_s3` - requirements for storing to an AWS S3 bucket asynchronously.
+
+### The Store
+
+Interaction with the library is primarily accomplished through a global [`store`](#store) object. Any file can access this object by
+simply importing it.
+
+```python
+from filestorage import store
+store.finalized  # == False
+```
+
+The store can hold multiple configurations that are accessed through its indices:
+
+```python
+store['portraits'].finalized  # == False
+store['more']['and more'].finalized  # == False
+
+PORTRAIT_STORE = store['portraits']  # global variable for later use!
+```
+
+The store and any of its other sub-configurations can be saved and referenced prior to setting up any configuration.
+This allows the store or any other sub-configuration to be imported in any file and stored in global variables as
+needed.
+
+Trying to use the store to save files prior to providing it a handler will result in an error.
+
+```python
+store.save_data(filename='file.txt', data=b'spamity spam')
+
+# FilestorageConfigError: No handler provided for store
+```
+
+So it's time to give it a [handler](#handler).
+
+#### Configure the Store
+
+Although any file can import the [store}(#store), it will not actually be usable until you provide it some kind of configuration.
+You do this by giving the store a handler. The library includes a few kinds of [handlers](#all-handlers) with different configuration setups,
+but for testing you can just use the [DummyHandler](#dummyhandler):
+
+```python
+from filestore.handlers import DummmyHandler
+store.handler = DummyHandler()
+store['portraits'] = DummyHandler()
+```
+
+The DummyHandler doesn't need any other configuration, and now it allows the store to be used across the entire project!
+You would normally perform this configuration after all files have been imported but before your app starts up. Different
+servers (Pyramid/Django/Starlette) will have different mechanisms for this.
+
+Now you can try to save some data into the dummy handler and watch it work:
+
+```python
+store.save_data(filename='file.txt', data=b'spamity spam')
+
+# 'file.txt' - the name of the file that was saved
+
+store.exists(filename='file.txt')
+
+# True
+```
+
+When saving a file, the method returns the text of the filename that was saved. Some handlers might adjust the filename in different ways and
+the return value for the save methods give you that feedback.
+
+You can set and reset the handler several times. When you want to lock in the configuration, you need to finalize the store.
+When you do so, it will check to ensure that the handler is set for the root and any sub-configurations. If any handler is
+missing, the finalization will throw a configuration error. Any attempts to set a handler after this step will throw an error.
+
+```python
+store.finalize_config()
+
+store.handler = DummyHandler()
+# FilestorageConfigError: Setting store.handler: store already finalized!
+```
+
+This allows you to lock in configuration and prevent further changes in your code. The finalization step also will validate any handler configuration.
+For instance, the [local file handler](#localfilehandler) ensures its configured directory
+exists, the [async file handler](#asynclocalfilehandler) ensures the proper libraries are installed and the S3 handler checks the credentials.
+
+If you want to never use the store or one of the sub-stores, you should explicitly indicate that it should not be used. For instance, suppose
+you want to use two different configurations, but don't want to use the store's base config. You can do:
+
+```python
+store['portraits'].handler = DummyHandler()
+store['backgrounds'].handler = DummyHandler()
+
+# Indicate that we don't want anybody using the base configurations (no `store.save_data()`)
+store.handler = None
+
+# Finalize the configuration to prevent further changes
+store.finalize_config()
+```
+
+### Folders (#folders)
+
+The save/exists/delete methods can also be used on any sub-folder of the `store`.
+```python
+folder = store / 'one_folder' / 'another_folder'
+folder.save_data(b'contents', 'file.txt')
+```
+
+Folders are late-binding and can thus be saved into a variable prior to the handler configuration.
+
+If desired, a Folder can be used as a handler too:
+
+```python
+store.handler = DummyHandler()
+store['portraits'].handler = store / 'portraits'
+```
+
+## Classes
+
+### StorageContainer (`store` object) {#store}
+
+Methods:
+
+ * `handler` - Gets the configured handler or raises an exception of no handler has been provided. Set this property to set the handler.
+ * `sync_handler` - Gets the configured handler as a sync-only handler. Raises an exception if no `handler` has been set.
+ * `async_handler` - Gets the configured handler as an async-only handler. Raises an exception if no `handler` has been set or if the configured handler can't be used asynchronously.
+ * `finalize_config()` - Walk through all configured objects and check to ensure they have a valid configuration. Lock the `StorageContainer` to prevent any further configuration changes. Will raise a `FilestorageConfigError` if there's a configuration problem.
+ * `finalized` - `True` if the config has been finalized, `False` otherwise.
+ * `do_not_use` - `True` if the `handler` has been set to `None`, `False` otherwise.
+ * `name` - String name of how this configuration is accessed. `store['a'].name == "['a']"`.
+ * `[*]` - Get a sub-configuration object. Raises a `FilestorageConfigError` if the configuration is finalized and this configuration's `handler` hasn't been set.
+ * `/ 'name'` - Obtain a `Folder` object with the same save/exist/delete methods as this object which write to the named sub-folder.
+
+Once the handler is set, the store object can be used as a `StorageHandler` object.
+
+### StorageHandler (`StorageHandlerBase` or `AsyncStorageHandlerBase`) {#handler}
+
+The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase` by itself can ONLY be used for synchronous operations.
+
+Parameters:
+
+ * `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`.
+ * `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
+ * `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
+
+Methods:
+
+ * `get_url(filename: str)` - Return the full URL of the given filename.
+ * `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
+ * Synchronous methods:
+  * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
+  * `delete(filename: str)` - Deletes the given file from the store.
+  * `save_file(data: BinaryIO, filename: str)` - Save the binary IO object to the given file.
+  * `save_data(data: bytes, filename: str)` - Save the binary data to the given file.
+  * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
+ * Asynchronous methods: (all will throw a `FilestorageConfigError` if the handler doesn't support async operations.)
+  * `async_exists(filename: str)` - Awaitable version
+  * `async_delete(filename: str)` - Awaitable version
+  * `async_save_file(data: BinaryIO, filename: str)` - Awaitable version
+  * `async_save_data(data: binary, filename: str)` - Awaitable version
+  * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
+
+Abstract Methods to be overridden when sub-classing:
+
+ * `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
+ * Synchronous methods: (All get passed a [FileItem](#fileitem) object)
+  * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
+  * `_delete(item: FileItem)` - Remove the item from the storage container.
+  * `_save(item: FileItem)` - Save the item to the storage container. If the name was mangled to prevent any overwrites, return the new name.
+ * Asynchronous methods:
+  * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
+  * `async _async_delete(item: FileItem)` - async version.
+  * `async _async_save(item: FileItem)` - async version, optionally returns the new name if the name changed.
+
+### Filter (`FilterBase`) {#filter}
+
+The `FilterBase` is used as a base class for any Filters. These are not intended to be used directly, but to be passed as an optional list to a Handler through the `filters` parameter.
+
+Properties:
+
+ * `async_ok` - `True`/`False` to indicate if this Filter is OK to be used asynchronously.
+
+Methods:
+
+ * `call(item: FileItem)` - Returns the filtered [FileItem](#fileitem).
+ * `async_call(item: FileItem)` - Awaitable version of `call`. If the filter can't be used asynchronously, will raise a `FilestorageConfigError`.
+ * `validate()` - Checks to ensure the Filter is configured correctly. Might return an Awaitable.
+
+Abstract Methods to be overridden when sub-classing:
+
+ * `_apply(item: FileItem)` - Returns the filtered [FileItem](#fileitem). Could also be defined as an async method: `async _apply(item: FileItem)`. Can raise an exception if the filter fails.
+ * `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
+
+### FileItem {#fileitem}
+
+This is the basic item that's passed through Filters to the Handlers. It is based on a NamedTuple and is therefore immutable.
+
+Parameters, which are also Properties:
+ * `filename` - String
+ * `path` - Optional tuple of the path under which the `filename` can be accessed or stored. Example: `('folder', 'subfolder')`.
+ * `data` - Optional [BinaryIO](https://docs.python.org/3/library/typing.html#typing.BinaryIO) of the contents to store. Example: `BytesIO(b'contents')`.
+
+Properties:
+ * `url_path` - Relative path and filename for use in a URL. Example: `'folder/subfolder/file.txt'`
+ * `fs_path` - Relative path and filename for use in the local filesystem. Example when running on Windows: `'folder\subfolder\file.txt'`.
+
+Methods:
+ * `copy(**kwargs)` - Create a copy of this object, overriding any specific parameter. Example: `copy(filename='new_name.txt')`
+ * `sync_read(size: Optional[int])` - Synchronously read and return the contained `data`.
+ * `await async_read(size: Optional[int])` - Asynchronously read and return the contained `data`.
+ * `sync_seek(offset: int)` - Synchronously set the reader offset to the given position.
+ * `await async_seek(offset: int)` - Asynchronously set the reader offset to the given position.
+
+### Exceptions {#exceptions}
+
+All are importable via the `exceptions` sub-package. For example:
+
+```python
+from filestorage.exceptions import FilestorageError
+```
+
+ * FilestorageError - Base class for any exceptions raised by this library.
+ * FileNotAllowed - The provided file is not allowed, either through a [Filter](#filter) or from a [Handler](#handler).
+ * FileExtensionNotAllowed - The provided file with the given extension is not allowed, either through a [Filter](#filter) or from a [Handler](#handler).
+ * FilestorageConfigError - There was some problem with the configuration.
+
+### Handlers {#all-handlers}
+
+All handlers are subclasses of the [StorageHandler](*handler) class. These are importable via the `handlers` sub-package. For example:
+
+```python
+from filestorage.handlers import LocalFileHandler
+
+store.handler = LocalFileHandler(base_path='/home/www/uploads`)
+```
+
+#### LocalFileHandler {#localfilehandler}
+
+Store files on the local file system using synchronous methods.
+
+Async not OK.
+
+Parameters:
+ * `base_path` - Where to store the files on the local filesystem
+ * `auto_make_dir` - Automatically create the directory as needed.
+
+#### AsyncLocalFileHandler {#asynclocalfilehandler}
+
+Store files on the local file system using asynchronous methods.
+
+Async OK.
+
+> :warning: Requires the `aiofiles` library, which will be installed with `pip install filestorage['aio_file']`
+
+Parameters:
+ * `base_path` - Where to store the files on the local filesystem
+ * `auto_make_dir` - Automatically create the directory as needed.
+
+#### DummyHandler {#dummyhandler}
+
+Handler used to test the file store - keeps any stored files in memory.
+
+Async not OK - will fail for any async call. For an async version use [AsyncDummyHandler](#asyncdummyhandler).
+
+Accepts no parameters.
+
+Properties:
+
+ * `files` - a dictionary of all saved files. The key is the path/filename string and the value is a [FileItem](@fileitem) object.
+ * `validated` - `True` if the handler was validated (which happens while finalizing the config).
+ * `last_save` - The last [FileItem](@fileitem) saved.
+ * `last_delete` - The last [FileItem](@fileitem) deleted.
+
+Methods:
+
+ * `assert_exists(filename: str, path: Tuple[str, ...]` - Asserts that the provided filename and path have been saved.
+ * `assert_file_contains(filename: str, path: Tuple[str, ...], data: bytes)` - Asserts that the saved file contains the given data.
+
+#### DummyHandler {#dummyhandler}
+
+Identical to the [DummyHandler](#dummyhandler), but can be used asynchronously.
+
+### Filters {#all-filters}
+
+All are importable via the `filters` sub-package. For example:
+
+```python
+from filestorage.filter import RandomizeFilename
+
+store.handler = DummyHandler(filters=[RandomizeFilename()])
+```
+
+#### RandomizeFilename {#randomizefilename}
+
+Filter to randomize the filename. It keeps any extension within the filename, but replaces the name with a random string.
+
+Async OK.
+
+Parameters:
+ * `name_generator` Optional method that takes the filename (without extension) and returns a new random name. When left off, this Filter uses the [uuid4](https://docs.python.org/3/library/uuid.html#uuid.uuid4) method.
+
+#### ValidateExtension {#validateextension}
+
+Reject any filename that does not have one of the indicated extensions. Raises a [`FileExtensionNotAllowed`](#exceptions) for a disallowed extension.
+
+Async OK.
+
+Parameters:
+ * `extensions` - List of exceptions to allow through this filter. Example: `['jpg', 'png']`
+
+## Testing (#testing)
+
+The [DummyHandler](#dummyhandler) or [AsyncDummyHandler](#asyncdummyhandler) are great tools for testing your application. To keep your tests isolated, you can create a new [store](#store) object and configure it for each test as needed.
+
+```python
+from filestorage import StorageContainer
+from filestorage.handlers import AsyncDummyHandler
+
+def test_store():
+    store = StorageContainer()
+    dummy_handler = AsyncDummyHandler()
+    store.handler = dummy_handler
+
+    # Do whatever should trigger your app to store a file
+
+    dummy_handler.assert_exists('name.txt', ('folder', 'subfolder'))
+```
+
+If you need to write several tests and want to check the result, it's probably best to create a couple of simple fixtures and allow [pytest](https://docs.pytest.org/en/stable/fixture.html) to inject them as needed.
+
+Within `tests/conftest.py`:
+```python
+import pytest
+
+from filestorage import StorageContainer
+from filestorage.handlers import AsyncDummyHandler
+
+@pytest.fixture
+def dummy_handler():
+    return AsyncDummyHandler()
+
+@pytest.fixture
+def store(dummy_handler):
+    store = StorageContainer()
+    store.handler = dummy_handler
+    store.finalize_config()
+    return store
+```
+
+Within `tests/test_myapp.py`
+```python
+def test_store(store, dummy_handler):
+    # The configured dummy handler and store were auto-created and passed in here
+
+    # Do whatever should trigger your app to store a file
+
+    dummy_handler.assert_exists('name.txt', ('folder', 'subfolder'))
