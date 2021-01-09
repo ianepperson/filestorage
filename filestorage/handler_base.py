@@ -1,17 +1,19 @@
-import io
-import urllib
 from abc import ABC, abstractmethod
 from asyncio import gather, isfuture, iscoroutine
+from io import BytesIO
 from typing import (
     Awaitable,
-    Callable,
+    BinaryIO,
+    cast,
     List,
     Optional,
     Tuple,
     Union,
     TYPE_CHECKING,
 )
+from urllib.parse import urljoin
 
+from . import utils
 from .file_item import FileItem
 from .exceptions import FilestorageConfigError
 from .filter_base import FilterBase
@@ -19,11 +21,6 @@ from .filter_base import FilterBase
 if TYPE_CHECKING:
     import cgi
     from .storage_container import StorageContainer
-
-# Type aliases for legibility
-MaybeAwaitBool = Union[bool, Awaitable[bool]]
-MaybeAwaitStr = Union[str, Awaitable[str]]
-MaybeAwaitNone = Union[None, Awaitable[None]]
 
 
 class StorageHandlerBase(ABC):
@@ -35,7 +32,7 @@ class StorageHandlerBase(ABC):
         filters: Optional[List[FilterBase]] = None,
         path: Union[Tuple[str, ...], List[str], str, None] = None,
     ):
-        self.handler_name = None
+        self.handler_name: Optional[str] = None
         self._base_url = base_url
         self._filters = filters or []
 
@@ -66,22 +63,22 @@ class StorageHandlerBase(ABC):
 
         If any configuration is amiss, raises a FilestorageConfigError.
         """
-        coroutines = []
+        coroutines: List[Awaitable] = []
         # Verify that any provided filters are valid.
         for filter_ in self._filters:
             result = filter_.validate()
             if iscoroutine(result) or isfuture(result):
-                coroutines.append(result)
+                coroutines.append(cast(Awaitable, result))
 
         result = self._validate()
         if iscoroutine(result) or isfuture(result):
-            coroutines.append(result)
+            coroutines.append(cast(Awaitable, result))
 
         if not coroutines:
-            return
+            return None
         return gather(*coroutines)
 
-    def _validate(self) -> None:
+    def _validate(self) -> Optional[Awaitable]:
         """Validate any subclass."""
         pass
 
@@ -89,20 +86,18 @@ class StorageHandlerBase(ABC):
         self,
         filename: str,
         subpath: Optional[Tuple[str, ...]] = None,
-        data: Optional[io.BytesIO] = None,
+        data: Optional[BinaryIO] = None,
     ) -> FileItem:
         path = self._path
         if subpath is not None:
-            path = subpath + self._path
+            path = path + subpath
 
         return FileItem(filename=filename, path=path, data=data)
-
-    GetUrlMethodType = Callable[[str], str]
 
     def get_url(self, filename: str) -> str:
         """Return the URL of a given filename in this storage container."""
         item = self.get_item(filename)
-        return urllib.parse.urljoin(self.base_url, item.url_path)
+        return urljoin(self.base_url, item.url_path)
 
     @classmethod
     def sanitize_filename(cls, filename: str) -> str:
@@ -121,12 +116,10 @@ class StorageHandlerBase(ABC):
 
         return filename
 
-    ExistsMethodType = Callable[[str], MaybeAwaitBool]
-
     def exists(self, filename: str) -> bool:
         """Determine if the given filename exists in the storage container."""
         item = self.get_item(filename)
-        return self._exists(item)
+        return cast(bool, self._exists(item))
 
     @abstractmethod
     def _exists(self, item: FileItem) -> bool:
@@ -134,8 +127,6 @@ class StorageHandlerBase(ABC):
         container.
         """
         pass
-
-    DeleteMethodType = Callable[[str], MaybeAwaitStr]
 
     def delete(self, filename: str) -> None:
         """Delete the given filename from the storage container, whether or not
@@ -158,9 +149,7 @@ class StorageHandlerBase(ABC):
         """
         pass
 
-    SaveFileMethodType = Callable[['io.BytesIO', str], MaybeAwaitStr]
-
-    def save_file(self, data: 'io.BytesIO', filename: str) -> str:
+    def save_file(self, data: BinaryIO, filename: str) -> str:
         """Verifies that the provided filename is legitimate and saves it to
         the storage container.
 
@@ -177,68 +166,19 @@ class StorageHandlerBase(ABC):
             filename = new_filename
         return filename
 
-    SaveFieldMethodType = Callable[['cgi.FieldStorage'], MaybeAwaitStr]
-
     def save_field(self, field: 'cgi.FieldStorage') -> str:
         """Save a file stored in a CGI field."""
-        return self.save_file(field.file, field.filename or 'file')
+        if not field.file:
+            raise RuntimeError('No file data in the field')
 
-    SaveDataMethodType = Callable[[bytes, str], MaybeAwaitStr]
+        return self.save_file(
+            cast(BinaryIO, field.file), field.filename or 'file'
+        )
 
     def save_data(self, data: bytes, filename: str) -> str:
         """Save a file from the byte data provided."""
-        fileio = io.BytesIO(data)
+        fileio = BytesIO(data)
         return self.save_file(fileio, filename)
-
-
-class SubFolder(StorageHandlerBase):
-    """A handler for a sub-folder of a container.
-
-    Note that this does not carry any config and depends on the
-    StorageContainer to provide the handler when needed.
-    """
-
-    def __init__(self, store: 'StorageContainer', path: Tuple[str]):
-        super().__init__(path=path)
-        self._store = store
-
-    def subfolder(self, folder_name: str) -> 'SubFolder':
-        """Get a subfolder for this subfolder"""
-        return SubFolder(store=self._store, path=self._path + (folder_name,))
-
-    def __eq__(self, other: 'SubFolder') -> bool:
-        return (
-            isinstance(other, SubFolder)
-            and (self._store is other._store)
-            and (self._path == other._path)
-        )
-
-    def __truediv__(self, other: str) -> 'SubFolder':
-        """Get a new subfolder when using the divide operator.
-
-        Allows building a path with path-looking code:
-            new_store = store / 'folder' / 'subfolder'
-        """
-        return self.subfolder(other)
-
-    def update_file_item(self, item: FileItem) -> FileItem:
-        new_path = self._store.handler.path + self._path
-        return FileItem(filename=item.filename, path=new_path, data=item.data)
-
-    def _exists(self, item: FileItem) -> bool:
-        """Return the handler's _exists method from this folder"""
-        item = self.update_file_item(item)
-        return self._store.handler._exists(item)
-
-    def _delete(self, item: FileItem) -> None:
-        """Return the handler's _delete method from this folder"""
-        item = self.update_file_item(item)
-        return self._store.handler._delete(item)
-
-    def _save(self, item: FileItem) -> str:
-        """Return the handler's _save from this folder"""
-        item = self.update_file_item(item)
-        return self._store.handler._save(item)
 
 
 class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
@@ -259,30 +199,47 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
                 )
         return super().validate()
 
-    async def _validate(self) -> None:
-        """Validate any subclass."""
-        pass
+    async def async_exists(self, filename: str) -> bool:
+        """Determine if the given filename exists in the storage container."""
+        item = self.get_item(filename)
+        return await self._async_exists(item)
+
+    def _exists(self, item: FileItem) -> bool:
+        return utils.async_to_sync(self._async_exists)(item)
 
     @abstractmethod
-    async def _exists(self, item: FileItem) -> bool:
+    async def _async_exists(self, item: FileItem) -> bool:
         """Determine if the given filename exists in the storage container."""
         pass
 
+    async def async_delete(self, filename: str) -> None:
+        """Delete the given filename from the storage container, whether or not
+        it exists.
+        """
+        item = self.get_item(filename)
+        await self._async_delete(item)
+
+    def _delete(self, item: FileItem) -> None:
+        utils.async_to_sync(self._async_delete)(item)
+
     @abstractmethod
-    async def _delete(self, item: FileItem) -> None:
+    async def _async_delete(self, item: FileItem) -> None:
         """Delete the given filename from the storage container, whether or not
         it exists.
         """
         pass
 
+    def _save(self, item: FileItem) -> Optional[str]:
+        return utils.async_to_sync(self._async_save)(item)
+
     @abstractmethod
-    async def _save(self, item: FileItem) -> Optional[str]:
+    async def _async_save(self, item: FileItem) -> Optional[str]:
         """Save the provided file to the given filename in the storage
         container.
         """
         pass
 
-    async def save_file(self, data: 'io.IOBase', filename: str) -> str:
+    async def async_save_file(self, data: BinaryIO, filename: str) -> str:
         """Verifies that the provided filename is legitimate and saves it to
         the storage container.
 
@@ -293,7 +250,96 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         for filter_ in self._filters:
             item = await filter_.async_call(item)
 
-        new_filename = await self._save(item)
+        new_filename = await self._async_save(item)
         if new_filename is not None:
             filename = new_filename
         return filename
+
+    async def async_save_field(self, field: 'cgi.FieldStorage') -> str:
+        """Save a file stored in a CGI field."""
+        if not field.file:
+            raise RuntimeError('No file data in the field')
+
+        return await self.async_save_file(
+            cast(BinaryIO, field.file), field.filename or 'file'
+        )
+
+    async def async_save_data(self, data: bytes, filename: str) -> str:
+        """Save a file from the byte data provided."""
+        fileio = BytesIO(data)
+        return await self.async_save_file(fileio, filename)
+
+
+class Folder(AsyncStorageHandlerBase):
+    """A handler for a sub-folder of a container.
+
+    Note that this does not carry any config and depends on the
+    StorageContainer to provide the handler when needed.
+    """
+
+    @property
+    def allow_sync(self):
+        return self._store.handler.allow_sync
+
+    def __init__(self, store: 'StorageContainer', path: Tuple[str, ...]):
+        super().__init__(path=path)
+        self._store = store
+
+    def subfolder(self, folder_name: str) -> 'Folder':
+        """Get a subfolder for this folder"""
+        return Folder(store=self._store, path=self._path + (folder_name,))
+
+    def __eq__(self, other) -> bool:
+        return (
+            isinstance(other, Folder)
+            and (self._store is other._store)
+            and (self._path == other._path)
+        )
+
+    def __truediv__(self, other: str) -> 'Folder':
+        """Get a new subfolder when using the divide operator.
+
+        Allows building a path with path-looking code:
+            new_store = store / 'folder' / 'subfolder'
+        """
+        return self.subfolder(other)
+
+    def _get_subfolder_file_item(self, item: FileItem) -> FileItem:
+        new_path = self._store.sync_handler.path + self._path
+        return FileItem(filename=item.filename, path=new_path, data=item.data)
+
+    # Pass through any exists methods
+
+    def _exists(self, item: FileItem) -> bool:
+        """Return the handler's _exists method from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._exists(item)
+
+    async def _async_exists(self, item: FileItem) -> bool:
+        """Return the handler's _async_exists method from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_exists(item)
+
+    # Pass through any delete methods
+
+    def _delete(self, item: FileItem) -> None:
+        """Return the handler's _delete method from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._delete(item)
+
+    async def _async_delete(self, item: FileItem) -> None:
+        """Return the handler's _async_delete method from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_delete(item)
+
+    # Pass through any save methods
+
+    def _save(self, item: FileItem) -> Optional[str]:
+        """Return the handler's _save from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._save(item)
+
+    async def _async_save(self, item: FileItem) -> Optional[str]:
+        """Return the handler's _async_save from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_save(item)

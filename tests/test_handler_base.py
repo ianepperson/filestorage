@@ -61,7 +61,7 @@ def test_validate_async_filter():
 async def test_validate_async_handler():
     handler = AsyncDummyHandler()
 
-    await handler.validate()
+    handler.validate()
 
     assert handler.validated
 
@@ -103,6 +103,12 @@ def test_sanitize_filename(handler, dirty, clean):
     assert handler.sanitize_filename(dirty) == clean
 
 
+def test_get_url():
+    handler = AsyncDummyHandler(base_url='http://eppx.com')
+
+    assert handler.get_url('file.txt') == 'http://eppx.com/file.txt'
+
+
 def test_save_file(handler):
     handler.save_data(data=b'contents', filename='file.txt')
 
@@ -113,7 +119,7 @@ def test_save_file(handler):
 @pytest.mark.asyncio
 async def test_async_save_file():
     handler = AsyncDummyHandler()
-    await handler.save_data(data=b'contents', filename='file.txt')
+    await handler.async_save_data(data=b'contents', filename='file.txt')
 
     assert handler.last_save.filename == 'file.txt'
     assert handler.last_save.sync_read() == b'contents'
@@ -142,13 +148,13 @@ def test_delete_file(handler):
 @pytest.mark.asyncio
 async def test_async_delete_file():
     handler = AsyncDummyHandler()
-    assert not await handler.exists('file.txt')
+    assert not await handler.async_exists('file.txt')
 
-    await handler.save_data(data=b'contents', filename='file.txt')
-    assert await handler.exists('file.txt')
+    await handler.async_save_data(data=b'contents', filename='file.txt')
+    assert await handler.async_exists('file.txt')
 
-    await handler.delete('file.txt')
-    assert not await handler.exists('file.txt')
+    await handler.async_delete('file.txt')
+    assert not await handler.async_exists('file.txt')
 
 
 def test_subfolder_save(store, handler):

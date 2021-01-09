@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Optional
+from typing import Callable
 from uuid import uuid4
 
 from filestorage import FilterBase, FileItem
@@ -14,11 +14,11 @@ class RandomizeFilename(FilterBase):
 
     async_ok = True
 
-    def __init__(self, name_generator: Optional[Callable[[str], str]] = None):
-        if name_generator is None:
-            self.name_generator = random_string_generator
-        else:
-            self.name_generator = name_generator
+    def __init__(
+        self,
+        name_generator: Callable[[str], str] = random_string_generator,
+    ):
+        self.name_generator = name_generator
 
     def _apply(self, item: FileItem) -> FileItem:
 

@@ -53,7 +53,7 @@ def test_sync_filter_bad_call(Filter):
 async def test_async_filter_call(Filter):
     handler = AsyncDummyHandler(filters=[Filter()])
 
-    await handler.save_data(data=b'contents', filename='file.txt')
+    await handler.async_save_data(data=b'contents', filename='file.txt')
 
     assert handler.last_save.filename == 'filtered_name.txt'
     assert handler.last_save.sync_read() == b'contents'
@@ -62,9 +62,9 @@ async def test_async_filter_call(Filter):
 @pytest.mark.parametrize('Filter', [FailedFilter, AsyncFailedFilter])
 @pytest.mark.asyncio
 async def test_async_filter_bad_call(Filter):
-    handler = DummyHandler(filters=[Filter()])
+    handler = AsyncDummyHandler(filters=[Filter()])
 
     with pytest.raises(RuntimeError) as err:
-        await handler.save_data(data=b'contents', filename='file.txt')
+        await handler.async_save_data(data=b'contents', filename='file.txt')
 
     assert str(err.value) == 'called a FailedFilter'

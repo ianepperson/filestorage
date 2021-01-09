@@ -1,7 +1,8 @@
-from asyncio import iscoroutine, isfuture, get_event_loop
 from abc import ABC, abstractmethod
-from typing import Awaitable, Optional
+from asyncio import iscoroutinefunction
+from typing import Awaitable, cast, Optional, Union
 
+from . import utils
 from .exceptions import FilestorageConfigError
 from .file_item import FileItem
 
@@ -18,13 +19,7 @@ class FilterBase(ABC):
 
     def call(self, item: FileItem) -> FileItem:
         """Apply the filter synchronously"""
-        result = self._apply(item)
-        if iscoroutine(result) or isfuture(result):
-            # Run to completion to get the result synchronously
-            event_loop = get_event_loop()
-            result = event_loop.run_until_complete(result)
-
-        return result
+        return utils.any_to_sync(self._apply)(item)
 
     async def async_call(self, item: FileItem) -> FileItem:
         """Apply the filter asynchronously"""
@@ -34,13 +29,12 @@ class FilterBase(ABC):
                 'asynchronously'
             )
 
-        result = self._apply(item)
-        if not (iscoroutine(result) or isfuture(result)):
-            return result
-        return await result
+        if iscoroutinefunction(self._apply):
+            return await cast(utils.AsyncCallable, self._apply)(item)
+        return cast(utils.SyncCallable, self._apply)(item)
 
     @abstractmethod
-    def _apply(self, item: FileItem) -> FileItem:
+    def _apply(self, item: FileItem) -> Union[Awaitable[FileItem], FileItem]:
         return item
 
 

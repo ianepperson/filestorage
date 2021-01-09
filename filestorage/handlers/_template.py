@@ -1,7 +1,8 @@
 # Use this as a template for creating new storage handler classes
-from typing import Optional
+from typing import Awaitable, Optional
 
-# If creating an awaitable handler, use AsyncStorageHandlerBase instead
+# If creating an awaitable handler, use AsyncStorageHandlerBase instead and
+# populate every _async_* method.
 from filestorage import StorageHandlerBase, FileItem
 from filestorage.exceptions import FilestorageConfigError
 
@@ -17,14 +18,16 @@ class NewStorageHandler(StorageHandlerBase):
         super().__init__(**kwargs)
         pass
 
-    def _validate(self) -> None:
+    def _validate(self) -> Optional[Awaitable]:
         """Perform any setup or validation."""
         # This should be called prior to other calls, but it might not!
         # If there's a problem with the validation, raise an error.
         # If the problem is with the configuration:
         #     raise FilestorageConfigError('describe the problem')
+        # Can be an async method if necessary and will be awaited on properly.
         raise FilestorageConfigError('This is a template, not a real handler!')
 
+    # async def _async_exists(self, item: FileItem) -> bool:
     def _exists(self, item: FileItem) -> bool:
         """Indicate if the given file exists within the given folder."""
         # filename might be something like 'foo.txt'
@@ -33,6 +36,7 @@ class NewStorageHandler(StorageHandlerBase):
         #     urlpath = '/'.join(item.path + (item.filename,))
         pass
 
+    # async def _async_save(self, item: FileItem) -> Optional[str]:
     def _save(self, item: FileItem) -> Optional[str]:
         """Save the provided file to the given filename in the storage
         container.
@@ -48,6 +52,7 @@ class NewStorageHandler(StorageHandlerBase):
         #     data = await item.async_read()
         pass
 
+    # async def _async_delete(self, item: FileItem) -> None:
     def _delete(self, item: FileItem) -> None:
         """Delete the given item from the storage container, whether or not
         it exists.

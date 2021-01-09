@@ -1,13 +1,13 @@
-import asyncio
-import io
 import os
-from typing import NamedTuple, Optional, Tuple
+from typing import NamedTuple, Optional, Tuple, BinaryIO
+
+from . import utils
 
 
 class FileItem(NamedTuple):
     filename: str
     path: Tuple[str, ...] = tuple()
-    data: Optional[io.BytesIO] = None
+    data: Optional[BinaryIO] = None
 
     def __repr__(self) -> str:
         has_data = 'no data' if self.data is None else 'with data'
@@ -27,49 +27,32 @@ class FileItem(NamedTuple):
         return os.path.join(*self.path, self.filename)
 
     def copy(self, **kwargs) -> 'FileItem':
-        new_values = {
-            'filename': self.filename,
-            'path': self.path,
-            'data': self.data,
-        }
+        filename = kwargs.get('filename', self.filename)
+        path = kwargs.get('path', self.path)
+        data = kwargs.get('data', self.data)
 
-        new_values.update(kwargs)
-        return FileItem(**new_values)
+        return FileItem(filename=filename, path=path, data=data)
 
     def sync_read(self, size: int = -1) -> bytes:
         if self.data is None:
             return b''
 
-        if asyncio.iscoroutinefunction(self.data.read):
-            event_loop = asyncio.get_event_loop()
-            return event_loop.run_until_complete(self.data.read(size))
-        else:
-            return self.data.read(size)
+        return utils.any_to_sync(self.data.read)(size)
 
     async def async_read(self, size: int = -1) -> bytes:
         if self.data is None:
             return b''
 
-        if asyncio.iscoroutinefunction(self.data.read):
-            return await self.data.read(size)
-        else:
-            return self.data.read(size)
+        return await utils.any_to_async(self.data.read)(size)
 
     def sync_seek(self, offset: int) -> int:
         if self.data is None:
             return 0
 
-        if asyncio.iscoroutinefunction(self.data.seek):
-            event_loop = asyncio.get_event_loop()
-            return event_loop.run_until_complete(self.data.seek(offset))
-        else:
-            return self.data.seek(offset)
+        return utils.any_to_sync(self.data.seek)(offset)
 
     async def async_seek(self, offset: int) -> int:
         if self.data is None:
             return 0
 
-        if asyncio.iscoroutinefunction(self.data.seek):
-            return await self.data.seek(offset)
-        else:
-            return self.data.seek(offset)
+        return await utils.any_to_async(self.data.seek)(offset)

@@ -43,6 +43,27 @@ def test_validate_handler(store, handler):
     assert store.handler.validated
 
 
+def test_do_not_use(store):
+    assert not store.do_not_use
+    store.set_do_not_use()
+    assert store.do_not_use
+
+    # Can now finalize without errors and without config
+    store.finalize_config()
+
+
+def test_do_not_use_after_config(store, handler):
+    store.handler = handler
+
+    with pytest.raises(FilestorageConfigError) as err:
+        store.set_do_not_use()
+
+    assert (
+        str(err.value)
+        == "Setting store.set_do_not_use(): a handler is already set!"
+    )
+
+
 def test_validate_async_handler(store, handler, async_handler):
     store.handler = handler
     store['a'].handler = async_handler
@@ -71,24 +92,6 @@ def test_path_by_div(store, handler):
     item = store.handler.last_save
     assert item.sync_read() == b'As a cucumber.'
     assert item.url_path == 'static/a/b/new_file.txt'
-
-
-def test_populate_handler_methods(store, handler):
-    assert store.exists is None
-    assert store.delete is None
-    assert store.save_file is None
-    assert store.save_field is None
-    assert store.save_data is None
-    assert store.get_url is None
-
-    store.handler = handler
-
-    assert store.exists == handler.exists
-    assert store.delete == handler.delete
-    assert store.save_file == handler.save_file
-    assert store.save_field == handler.save_field
-    assert store.save_data == handler.save_data
-    assert store.get_url == handler.get_url
 
 
 def test_bad_handler_setting(store):

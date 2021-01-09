@@ -1,11 +1,15 @@
 from asyncio import gather, get_event_loop, isfuture, iscoroutine
-from typing import Awaitable, List, Optional
+from typing import Awaitable, cast, Dict, List, Optional, Union
 
 from .exceptions import FilestorageConfigError
-from .handler_base import StorageHandlerBase, SubFolder
+from .handler_base import (
+    AsyncStorageHandlerBase,
+    StorageHandlerBase,
+    Folder,
+)
 
 
-class StorageContainer:
+class StorageContainer(Folder):
     """A class for handling storage configuration and retrieval.
 
     This is intended to be a singleton and contains global storage
@@ -17,29 +21,15 @@ class StorageContainer:
         name: Optional[str] = None,
         parent: Optional['StorageContainer'] = None,
     ):
-        self._name = name
+        # Init the folder superclass
+        super().__init__(store=self, path=tuple())
+
+        self._name: Optional[str] = name
         self._parent = parent
-        self._children = {}
-        self._handler = None
-        self._filters = []
+        self._children: Dict[str, 'StorageContainer'] = {}
+        self._handler: Optional[StorageHandlerBase] = None
+        self._do_not_use = False
         self._finalized = False
-
-    # Define all the function calls that will populate when the handler is set.
-    exists: Optional[StorageHandlerBase.ExistsMethodType] = None
-    delete: Optional[StorageHandlerBase.DeleteMethodType] = None
-    save_file: Optional[StorageHandlerBase.SaveFileMethodType] = None
-    save_field: Optional[StorageHandlerBase.SaveFieldMethodType] = None
-    save_data: Optional[StorageHandlerBase.SaveDataMethodType] = None
-    get_url: Optional[StorageHandlerBase.GetUrlMethodType] = None
-
-    def _populate_handler_methods(self, handler: StorageHandlerBase) -> None:
-        """Populate the public handler methods on this object"""
-        self.exists = handler.exists
-        self.delete = handler.delete
-        self.save_file = handler.save_file
-        self.save_field = handler.save_field
-        self.save_data = handler.save_data
-        self.get_url = handler.get_url
 
     @property
     def name(self) -> str:
@@ -56,7 +46,25 @@ class StorageContainer:
         return self._finalized
 
     @property
-    def handler(self) -> StorageHandlerBase:
+    def do_not_use(self) -> bool:
+        return self._do_not_use
+
+    @property
+    def sync_handler(self) -> StorageHandlerBase:
+        return cast(StorageHandlerBase, self.handler)
+
+    @property
+    def async_handler(self) -> AsyncStorageHandlerBase:
+        handler = self.handler
+        if not isinstance(handler, AsyncStorageHandlerBase):
+            raise FilestorageConfigError(
+                f'No async handler provided for store{self.name}'
+            )
+
+        return cast(AsyncStorageHandlerBase, handler)
+
+    @property
+    def handler(self) -> Union[StorageHandlerBase, AsyncStorageHandlerBase]:
         if self._handler is None:
             raise FilestorageConfigError(
                 f'No handler provided for store{self.name}'
@@ -70,6 +78,10 @@ class StorageContainer:
             raise FilestorageConfigError(
                 f'Setting store{self.name}.handler: store already finalized!'
             )
+        if self._do_not_use:
+            raise FilestorageConfigError(
+                f'Setting store{self.name}.handler: do_not_use already set!'
+            )
         if self._handler is not None:
             raise FilestorageConfigError(
                 f'Setting store{self.name}.handler: handler already set!'
@@ -82,7 +94,20 @@ class StorageContainer:
         # Inject the handler name
         handler.handler_name = self._name
         self._handler = handler
-        self._populate_handler_methods(handler)
+
+    def set_do_not_use(self) -> None:
+        """Indicate that this container should not be used."""
+        if self._finalized:
+            raise FilestorageConfigError(
+                f'Setting store{self.name}.set_do_not_use(): '
+                'store already finalized!'
+            )
+        if self._handler is not None:
+            raise FilestorageConfigError(
+                f'Setting store{self.name}.set_do_not_use(): '
+                'a handler is already set!'
+            )
+        self._do_not_use = True
 
     def finalize_config(
         self, coroutines: Optional[List[Awaitable]] = None
@@ -95,6 +120,9 @@ class StorageContainer:
         if self._finalized:
             return
         self._finalized = True
+
+        if self._do_not_use:
+            return
 
         if self._handler is None:
             raise FilestorageConfigError(
@@ -109,7 +137,7 @@ class StorageContainer:
 
         result = self._handler.validate()
         if iscoroutine(result) or isfuture(result):
-            coroutines.append(result)
+            coroutines.append(cast(Awaitable, result))
 
         for child in self._children.values():
             child.finalize_config(coroutines)
@@ -120,18 +148,6 @@ class StorageContainer:
             # Run them to completion before returning (synchronously)
             event_loop = get_event_loop()
             event_loop.run_until_complete(results)
-
-    def subfolder(self, folder_name: str) -> SubFolder:
-        """Get a subfolder for this container."""
-        return SubFolder(store=self, path=(folder_name,))
-
-    def __truediv__(self, other: str) -> SubFolder:
-        """Get a new subfolder when using the divide operator.
-
-        Allows building a path with path-looking code:
-            new_store = store / 'folder' / 'subfolder'
-        """
-        return self.subfolder(other)
 
     def __getitem__(self, key: str) -> 'StorageContainer':
         """Get or create a storage container as a lookup.

@@ -1,7 +1,8 @@
 # Use this as a template for creating new filter classes
 from typing import Awaitable, Optional
 
-# If creating an awaitable filter, use AsyncFilterBase instead
+# If creating an awaitable filter, use AsyncFilterBase instead and use
+# async _apply(self, item).
 from filestorage import FilterBase, FileItem
 
 
