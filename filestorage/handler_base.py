@@ -54,6 +54,10 @@ class StorageHandlerBase(ABC):
     def path(self) -> Tuple[str, ...]:
         return self._path
 
+    @property
+    def filters(self) -> List[FilterBase]:
+        return self._filters
+
     def __str__(self):
         return f'<{self.__class__.__name__}("{self.handler_name}")>'
 
@@ -143,9 +147,9 @@ class StorageHandlerBase(ABC):
         pass
 
     @abstractmethod
-    def _save(self, item: FileItem) -> Optional[str]:
+    def _save(self, item: FileItem) -> str:
         """Save the provided file to the given filename in the storage
-        container.
+        container. Returns the name of the file saved
         """
         pass
 
@@ -158,13 +162,10 @@ class StorageHandlerBase(ABC):
         filename = self.sanitize_filename(filename)
         item = self.get_item(filename, data=data)
 
-        for filter_ in self._filters:
+        for filter_ in self.filters:
             item = filter_.call(item)
 
-        new_filename = self._save(item)
-        if new_filename is not None:
-            filename = new_filename
-        return filename
+        return self._save(item)
 
     def save_field(self, field: 'cgi.FieldStorage') -> str:
         """Save a file stored in a CGI field."""
@@ -191,7 +192,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         If anything is amiss, raises a FilestorageConfigError.
         """
         # Verify that any provided filters are ok to use.
-        for filter_ in self._filters:
+        for filter_ in self.filters:
             if not filter_.async_ok:
                 raise FilestorageConfigError(
                     f'Filter {filter_} cannot be used in '
@@ -229,13 +230,13 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         """
         pass
 
-    def _save(self, item: FileItem) -> Optional[str]:
+    def _save(self, item: FileItem) -> str:
         return utils.async_to_sync(self._async_save)(item)
 
     @abstractmethod
-    async def _async_save(self, item: FileItem) -> Optional[str]:
+    async def _async_save(self, item: FileItem) -> str:
         """Save the provided file to the given filename in the storage
-        container.
+        container. Returns the name of the file saved.
         """
         pass
 
@@ -247,7 +248,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         """
         filename = self.sanitize_filename(filename)
         item = self.get_item(filename, data=data)
-        for filter_ in self._filters:
+        for filter_ in self.filters:
             item = await filter_.async_call(item)
 
         new_filename = await self._async_save(item)
@@ -280,6 +281,10 @@ class Folder(AsyncStorageHandlerBase):
     @property
     def allow_sync(self):
         return self._store.handler.allow_sync
+
+    @property
+    def filters(self) -> List[FilterBase]:
+        return self._store.handler.filters
 
     def __init__(self, store: 'StorageContainer', path: Tuple[str, ...]):
         super().__init__(path=path)
@@ -334,12 +339,12 @@ class Folder(AsyncStorageHandlerBase):
 
     # Pass through any save methods
 
-    def _save(self, item: FileItem) -> Optional[str]:
+    def _save(self, item: FileItem) -> str:
         """Return the handler's _save from this folder"""
         item = self._get_subfolder_file_item(item)
         return self._store.sync_handler._save(item)
 
-    async def _async_save(self, item: FileItem) -> Optional[str]:
+    async def _async_save(self, item: FileItem) -> str:
         """Return the handler's _async_save from this folder"""
         item = self._get_subfolder_file_item(item)
         return await self._store.async_handler._async_save(item)

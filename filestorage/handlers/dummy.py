@@ -29,14 +29,14 @@ class DummyHandler(StorageHandlerBase):
         """Assert that the given file exists in the dummy file system."""
         assert self._exists(FileItem(filename=filename, path=path))
 
-    def _save(self, item: FileItem) -> Optional[str]:
+    def _save(self, item: FileItem) -> str:
         """Save the provided file to the given filename in the storage
         container.
         """
         self.files[item.url_path] = item.sync_read()
         item.sync_seek(0)
         self.last_save = item
-        return None
+        return item.filename
 
     def assert_file_contains(
         self, filename: str, path: Tuple[str, ...], data: bytes
@@ -78,14 +78,14 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """Assert that the given file exists in the dummy file system."""
         assert self._exists(FileItem(filename=filename, path=path))
 
-    async def _async_save(self, item: FileItem) -> Optional[str]:
+    async def _async_save(self, item: FileItem) -> str:
         """Save the provided file to the given filename in the storage
-        container.
+        container. Returns the name of the file saved.
         """
         self.files[item.url_path] = item.sync_read()
         item.sync_seek(0)
         self.last_save = item
-        return None
+        return item.filename
 
     def assert_file_contains(
         self, filename: str, path: Tuple[str, ...], data: bytes

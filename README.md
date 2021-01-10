@@ -213,7 +213,7 @@ Abstract Methods to be overridden when sub-classing:
  * Synchronous methods: (All get passed a [FileItem](#fileitem) object)
   * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
   * `_delete(item: FileItem)` - Remove the item from the storage container.
-  * `_save(item: FileItem)` - Save the item to the storage container. If the name was mangled to prevent any overwrites, return the new name.
+  * `_save(item: FileItem)` - Save the item to the storage container and return the name of the file saved.
  * Asynchronous methods:
   * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
   * `async _async_delete(item: FileItem)` - async version.

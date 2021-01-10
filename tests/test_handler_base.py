@@ -5,7 +5,7 @@ from io import BytesIO
 import pytest
 from mock import Mock
 
-from filestorage import FileItem, StorageContainer
+from filestorage import FileItem, StorageContainer, FilterBase
 from filestorage.exceptions import FilestorageConfigError
 from filestorage.handlers import DummyHandler, AsyncDummyHandler
 
@@ -178,3 +178,25 @@ def test_subfolder_delete_file(store, handler):
 
     subfolder.delete('file.txt')
     assert not subfolder.exists('file.txt')
+
+
+class MockFilter(FilterBase):
+    def __init__(self, id_: str):
+        self.mock = Mock()
+        self.id_ = id_
+
+    def _apply(self, item: FileItem) -> FileItem:
+        self.mock._apply(item)
+        # append the id_ to the filename
+        return item.copy(filename=item.filename + self.id_)
+
+
+def test_calls_filter(store):
+    filter1 = MockFilter('-1')
+    filter2 = MockFilter('-2')
+    store.handler = DummyHandler(filters=[filter1, filter2])
+    result = store.save_data(data=b'contents', filename='file.txt')
+
+    filter1.mock._apply.assert_called()
+    filter2.mock._apply.assert_called()
+    assert result == 'file.txt-1-2'

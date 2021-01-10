@@ -36,10 +36,10 @@ class NewStorageHandler(StorageHandlerBase):
         #     urlpath = '/'.join(item.path + (item.filename,))
         pass
 
-    # async def _async_save(self, item: FileItem) -> Optional[str]:
-    def _save(self, item: FileItem) -> Optional[str]:
+    # async def _async_save(self, item: FileItem) -> str:
+    def _save(self, item: FileItem) -> str:
         """Save the provided file to the given filename in the storage
-        container.
+        container. Returns the name of the file saved.
         """
         # If the filename is modified to save it properly, return the new
         # filename. This might happen if the library can detect that the name
