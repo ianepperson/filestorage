@@ -1,3 +1,4 @@
+import inspect
 from abc import ABC, abstractmethod
 from asyncio import gather, isfuture, iscoroutine
 from io import BytesIO
@@ -70,6 +71,12 @@ class StorageHandlerBase(ABC):
         coroutines: List[Awaitable] = []
         # Verify that any provided filters are valid.
         for filter_ in self._filters:
+            if inspect.isclass(filter_):
+                filter_name: str = filter_.__name__  # type: ignore
+                raise FilestorageConfigError(
+                    f'Filter {filter_name} is a class, not an instance. '
+                    f'Did you mean to use "filters=[{filter_name}()]" instead?'
+                )
             result = filter_.validate()
             if iscoroutine(result) or isfuture(result):
                 coroutines.append(cast(Awaitable, result))

@@ -200,3 +200,18 @@ def test_calls_filter(store):
     filter1.mock._apply.assert_called()
     filter2.mock._apply.assert_called()
     assert result == 'file.txt-1-2'
+
+
+def test_filter_class_not_instance():
+    """When the library user accidentally passes in the class instead of
+    an instance of the class, handle the problem and prompt for the likely
+    solution.
+    """
+    handler = DummyHandler(filters=[MockFilter])
+    with pytest.raises(FilestorageConfigError) as err:
+        handler.validate()
+
+    assert str(err.value) == (
+        'Filter MockFilter is a class, not an instance. '
+        'Did you mean to use "filters=[MockFilter()]" instead?'
+    )
