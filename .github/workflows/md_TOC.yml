@@ -1,4 +1,9 @@
 # Update the table of contents for the provided files
+name: Update Markdown TOC
+
+# Use in the markdown file to indicate where to put it:
+# <!--ts-->
+# <!--te-->
 
 on:
   push:
