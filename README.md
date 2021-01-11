@@ -13,6 +13,31 @@ Supports multiple storage services simultaneously or even the same service with 
 Upload filters are trivial to create and a few [are included](#filters) by default.
 
 <!--ts-->
+   * [filestorage](#filestorage)
+      * [Introduction](#introduction)
+         * [Installation](#installation)
+         * [The Store](#the-store)
+            * [Configure the Store](#configure-the-store)
+         * [Folders](#folders)
+         * [Adding Filters](#adding-filters)
+      * [Classes](#classes)
+         * [StorageContainer](#storagecontainer)
+         * [StorageHandler](#storagehandler)
+         * [Filter](#filter)
+         * [FileItem](#fileitem)
+         * [Exceptions](#exceptions)
+         * [Handlers](#handlers)
+            * [LocalFileHandler](#localfilehandler)
+            * [AsyncLocalFileHandler](#asynclocalfilehandler)
+            * [DummyHandler](#dummyhandler)
+            * [AsyncDummyHandler](#asyncdummyhandler)
+         * [Filters](#filters)
+            * [RandomizeFilename](#randomizefilename)
+            * [ValidateExtension](#validateextension)
+      * [Testing](#testing)
+
+<!-- Added by: runner, at: Mon Jan 11 21:37:40 UTC 2021 -->
+
 <!--te-->
 
 ## Introduction
