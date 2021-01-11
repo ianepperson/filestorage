@@ -195,29 +195,29 @@ Methods:
  * `get_url(filename: str)` - Return the full URL of the given filename.
  * `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
  * Synchronous methods:
-  * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
-  * `delete(filename: str)` - Deletes the given file from the store.
-  * `save_file(data: BinaryIO, filename: str)` - Save the binary IO object to the given file.
-  * `save_data(data: bytes, filename: str)` - Save the binary data to the given file.
-  * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
+   * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
+   * `delete(filename: str)` - Deletes the given file from the store.
+   * `save_file(data: BinaryIO, filename: str)` - Save the binary IO object to the given file.
+   * `save_data(data: bytes, filename: str)` - Save the binary data to the given file.
+   * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
  * Asynchronous methods: (all will throw a `FilestorageConfigError` if the handler doesn't support async operations.)
-  * `async_exists(filename: str)` - Awaitable version
-  * `async_delete(filename: str)` - Awaitable version
-  * `async_save_file(data: BinaryIO, filename: str)` - Awaitable version
-  * `async_save_data(data: binary, filename: str)` - Awaitable version
-  * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
+   * `async_exists(filename: str)` - Awaitable version
+   * `async_delete(filename: str)` - Awaitable version
+   * `async_save_file(data: BinaryIO, filename: str)` - Awaitable version
+   * `async_save_data(data: binary, filename: str)` - Awaitable version
+   * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
 
 Abstract Methods to be overridden when sub-classing:
 
  * `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
  * Synchronous methods: (All get passed a [FileItem](#fileitem) object)
-  * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
-  * `_delete(item: FileItem)` - Remove the item from the storage container.
-  * `_save(item: FileItem)` - Save the item to the storage container and return the name of the file saved.
+   * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
+   * `_delete(item: FileItem)` - Remove the item from the storage container.
+   * `_save(item: FileItem)` - Save the item to the storage container and return the name of the file saved.
  * Asynchronous methods:
-  * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
-  * `async _async_delete(item: FileItem)` - async version.
-  * `async _async_save(item: FileItem)` - async version, optionally returns the new name if the name changed.
+   * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
+   * `async _async_delete(item: FileItem)` - async version.
+   * `async _async_save(item: FileItem)` - async version, optionally returns the new name if the name changed.
 
 ### Filter
 
@@ -297,7 +297,7 @@ Store files on the local file system using asynchronous methods.
 
 Async OK.
 
-> :warning: Requires the `aiofiles` library, which will be installed with `pip install filestorage['aio_file']`
+> :warning: __Requires the `aiofiles` library__, which will be installed with `pip install filestorage['aio_file']`
 
 Parameters:
  * `base_path` - Where to store the files on the local filesystem
