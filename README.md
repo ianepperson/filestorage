@@ -16,6 +16,7 @@ Table of Contents
 =================
 <!--ts-->
    * [filestorage](#filestorage)
+   * [Table of Contents](#table-of-contents)
       * [Introduction](#introduction)
          * [Installation](#installation)
          * [The Store](#the-store)
@@ -38,7 +39,7 @@ Table of Contents
             * [ValidateExtension](#validateextension)
       * [Testing](#testing)
 
-<!-- Added by: runner, at: Mon Jan 11 21:37:40 UTC 2021 -->
+<!-- Added by: runner, at: Mon Jan 11 21:51:07 UTC 2021 -->
 
 <!--te-->
 
