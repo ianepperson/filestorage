@@ -12,6 +12,9 @@ Supports multiple storage services simultaneously or even the same service with 
 
 Upload filters are trivial to create and a few [are included](#filters) by default.
 
+<!--ts-->
+<!--te-->
+
 ## Introduction
 
 ### Installation
