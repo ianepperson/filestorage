@@ -30,10 +30,10 @@ class NewStorageHandler(StorageHandlerBase):
     # async def _async_exists(self, item: FileItem) -> bool:
     def _exists(self, item: FileItem) -> bool:
         """Indicate if the given file exists within the given folder."""
-        # filename might be something like 'foo.txt'
-        # folders might be something like ('folder', 'subfolder')
-        # If the path needs to look like a URL, you can build it like:
-        #     urlpath = '/'.join(item.path + (item.filename,))
+        # item.filename might be something like 'foo.txt'
+        # item.path might be something like ('folder', 'subfolder')
+        # If the path needs to look like a URL, you can build it with
+        # item.url_path, which joins any path item with the filename
         pass
 
     # async def _async_save(self, item: FileItem) -> str:

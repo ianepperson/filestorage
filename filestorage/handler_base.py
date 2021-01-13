@@ -286,12 +286,12 @@ class Folder(AsyncStorageHandlerBase):
     """
 
     @property
-    def allow_sync(self):
-        return self._store.handler.allow_sync
+    def async_ok(self):
+        return isinstance(self._store.handler, AsyncStorageHandlerBase)
 
     @property
     def filters(self) -> List[FilterBase]:
-        return self._store.handler.filters
+        return self._store.sync_handler.filters
 
     def __init__(self, store: 'StorageContainer', path: Tuple[str, ...]):
         super().__init__(path=path)
