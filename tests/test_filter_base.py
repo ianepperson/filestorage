@@ -34,8 +34,10 @@ def test_sync_filter_call(Filter):
 
     handler.save_data(data=b'contents', filename='file.txt')
 
-    assert handler.last_save.filename == 'filtered_name.txt'
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'filtered_name.txt'
+    with item as f:
+        assert f.read() == b'contents'
 
 
 @pytest.mark.parametrize('Filter', [FailedFilter, AsyncFailedFilter])
@@ -55,8 +57,10 @@ async def test_async_filter_call(Filter):
 
     await handler.async_save_data(data=b'contents', filename='file.txt')
 
-    assert handler.last_save.filename == 'filtered_name.txt'
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'filtered_name.txt'
+    with item as f:
+        assert f.read() == b'contents'
 
 
 @pytest.mark.parametrize('Filter', [FailedFilter, AsyncFailedFilter])
