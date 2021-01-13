@@ -347,11 +347,11 @@ Async OK.
 
 Parameters:
  * `bucket_name` - required - AWS bucket to store the files in.
- * `acl` [`'public-read'`] - Access-Control to apply to newly saved files. Other interesting options are `'private'`, `'authenticate-read'`, and `'bucket-owner-read'`. See [the S3 documentation](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) for more information.
- * `connect_timeout` [`5`] - Seconds to wait for a connection event before timeout.
- * `num_retries` [`5`] - How many times the library will attempt to connect before failing.
- * `read_timeout` [`10`] Seconds to wait for a read event before timeout.
- * `keepalive_timeout` [`12`] - Send a packet every few seconds to keep active connections open.
+ * `acl` (default: `'public-read'`) - Access-Control to apply to newly saved files. Other interesting options are `'private'`, `'authenticate-read'`, and `'bucket-owner-read'`. See [the S3 documentation](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl) for more information.
+ * `connect_timeout` (default: `5`) - Seconds to wait for a connection event before timeout.
+ * `num_retries` (default: `5` - How many times the library will attempt to connect before failing.
+ * `read_timeout` (default: `10`) Seconds to wait for a read event before timeout.
+ * `keepalive_timeout` (default: `12`) - Send a packet every few seconds to keep active connections open.
  * `host_url` - When using [non-AWS S3 service](https://www.google.com/search?q=s3+compatible+storage) (like [Linode](https://www.linode.com/products/object-storage/)), use this url to connect. (Example: `'https://us-east-1.linodeobjects.com'`)
  * `region_name` - Overrides any region_name defined in the [AWS configuration file](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-a-configuration-file) or  the `AWS_DEFAULT_REGION` environment variable. Required if using AWS S3 and the value is not already set elsewhere.
  * `addressing_style` - Overrides any S3.addressing_style set in the [AWS configuration file](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-a-configuration-file).
@@ -366,7 +366,7 @@ If you wish to directly provide the connection information to this handler, use 
 
  * `aws_access_key_id` - or use the `AWS_ACCESS_KEY_ID` environment variable.
  * `aws_secret_access_key` - or use the `AWS_SECRET_ACCESS_KEY` environment variable.
- * `aws_session_token` - Unnecessary when using the two previous options, but here for completeness. Note that [session tokens](https://docs.aws.amazon.com/cli/latest/reference/sts/get-session-token.html) have a maximum age of 36 hours. Or use the `AWS_SESSION_TOKEN` environment variable.
+ * `aws_session_token` - Unnecessary when using the two previous options, but here for completeness. Note that [session tokens](https://docs.aws.amazon.com/cli/latest/reference/sts/get-session-token.html) have a maximum age of 36 hours. Could instead use the `AWS_SESSION_TOKEN` environment variable.
  * `profile_name` - Which profile to use within a [shared credentials file](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#shared-credentials-file).
 
 #### DummyHandler
