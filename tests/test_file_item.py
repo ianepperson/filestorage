@@ -37,6 +37,17 @@ def test_fileitem_reader():
         assert f.read() == b'tents'
 
 
+@pytest.mark.asyncio
+async def test_async_fileitem_reader():
+    item = FileItem(filename='foo.txt', data=BytesIO(b'contents'))
+    item.data.seek(3)
+
+    async with item as f:
+        assert await f.read() == b'contents'
+        await f.seek(3)
+        assert await f.read() == b'tents'
+
+
 def test_url_path():
     item = FileItem(filename='foo.txt', path=('folder', 'subfolder'))
 

@@ -112,8 +112,10 @@ def test_get_url():
 def test_save_file(handler):
     handler.save_data(data=b'contents', filename='file.txt')
 
-    assert handler.last_save.filename == 'file.txt'
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'file.txt'
+    with item as f:
+        assert f.read() == b'contents'
 
 
 @pytest.mark.asyncio
@@ -121,8 +123,10 @@ async def test_async_save_file():
     handler = AsyncDummyHandler()
     await handler.async_save_data(data=b'contents', filename='file.txt')
 
-    assert handler.last_save.filename == 'file.txt'
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'file.txt'
+    with item as f:
+        assert f.read() == b'contents'
 
 
 def test_save_field(handler):
@@ -131,8 +135,10 @@ def test_save_field(handler):
     field.file = BytesIO(b'contents')
     handler.save_field(field)
 
-    assert handler.last_save.filename == 'file.txt'
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'file.txt'
+    with item as f:
+        assert f.read() == b'contents'
 
 
 def test_delete_file(handler):
@@ -163,9 +169,11 @@ def test_subfolder_save(store, handler):
 
     subfolder.save_data(data=b'contents', filename='file.txt')
 
-    assert handler.last_save.filename == 'file.txt'
-    assert handler.last_save.path == ('a', 'b')
-    assert handler.last_save.sync_read() == b'contents'
+    item = handler.last_save
+    assert item.filename == 'file.txt'
+    assert item.path == ('a', 'b')
+    with item as f:
+        assert f.read() == b'contents'
 
 
 def test_subfolder_delete_file(store, handler):

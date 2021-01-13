@@ -1,5 +1,4 @@
 import os
-import shutil
 from typing import Optional, Set
 
 try:
@@ -23,6 +22,7 @@ class LocalFileHandler(StorageHandlerBase):
     """Class for storing files locally"""
 
     async_ok = False
+    chunk_size = 1024 * 8
 
     def __init__(self, base_path, auto_make_dir=False, **kwargs):
         super().__init__(**kwargs)
@@ -75,7 +75,12 @@ class LocalFileHandler(StorageHandlerBase):
 
         filename = self.resolve_filename(item)
         with open(self.local_path(item), 'wb') as destination:
-            shutil.copyfileobj(item.data, destination)
+            with item as f:
+                while True:
+                    chunk = f.read(self.chunk_size)
+                    if not chunk:
+                        break
+                    destination.write(chunk)
 
         return filename
 
@@ -153,11 +158,12 @@ class AsyncLocalFileHandler(AsyncStorageHandlerBase, LocalFileHandler):
         filename = await self.async_resolve_filename(item)
         open_context = aiofiles.open(self.local_path(item), 'wb')
         async with open_context as destination:  # type: ignore
-            while True:
-                chunk = item.async_read(1024)
-                if not chunk:
-                    break
-                await destination.write(chunk)
+            async with item as f:
+                while True:
+                    chunk = await f.read(self.chunk_size)
+                    if not chunk:
+                        break
+                    await destination.write(chunk)
 
         return filename
 

@@ -26,6 +26,27 @@ class SyncReader(BinaryIO):
     closed = False
 
 
+class AsyncReader:
+    def __init__(self, item: 'FileItem'):
+        self.data = item.data
+        self.filename = item.filename
+        if self.data is not None:
+            self._reader = utils.any_to_async(self.data.read)
+            self._seeker = utils.any_to_async(self.data.seek)
+
+    async def seek(self, offset: int, whence: int = 0) -> int:
+        if self.data is None:
+            return -1
+        return await self._seeker(offset)
+
+    async def read(self, size: int = -1) -> bytes:
+        if self.data is None:
+            return b''
+        return await self._reader(size)
+
+    closed = False
+
+
 class FileItem(NamedTuple):
     filename: str
     path: Tuple[str, ...] = tuple()
@@ -77,25 +98,10 @@ class FileItem(NamedTuple):
     def __exit__(*args, **kwargs):
         pass
 
-    def sync_read(self, size: Optional[int] = -1) -> bytes:
-        if self.data is None:
-            return b''
-        return utils.any_to_sync(self.data.read)(size)
+    async def __aenter__(self):
+        reader = AsyncReader(self)
+        await reader.seek(0)
+        return reader
 
-    async def async_read(self, size: Optional[int] = -1) -> bytes:
-        if self.data is None:
-            return b''
-
-        return await utils.any_to_async(self.data.read)(size)
-
-    def sync_seek(self, offset: int) -> int:
-        if self.data is None:
-            return 0
-
-        return utils.any_to_sync(self.data.seek)(offset)
-
-    async def async_seek(self, offset: int) -> int:
-        if self.data is None:
-            return 0
-
-        return await utils.any_to_async(self.data.seek)(offset)
+    async def __aexit__(*args, **kwargs):
+        pass

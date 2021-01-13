@@ -1,6 +1,6 @@
 import uuid
 from io import BytesIO
-from typing import Awaitable, Dict, Optional, Union
+from typing import Awaitable, Optional
 
 from filestorage import AsyncStorageHandlerBase, FileItem
 from filestorage.exceptions import FilestorageConfigError
@@ -8,8 +8,8 @@ from filestorage.exceptions import FilestorageConfigError
 try:
     # The Literal type was introduced in Python 3.8
     from typing import Literal
-except:
-    Literal = None
+except ImportError:
+    Literal = None  # type: ignore
 
 try:
     import aioboto3  # type: ignore
@@ -50,9 +50,9 @@ if Literal is not None:
     # #changing-the-addressing-style
     TypeAddressingStyle = Literal[None, 'auto', 'path', 'virtual']
 else:
-    # Python 3.6, 3.7
-    TypeACL = str
-    TypeAddressingStyle = Optional[str]
+    # Python 3.7
+    TypeACL = str  # type: ignore
+    TypeAddressingStyle = Optional[str]  # type: ignore
 
 
 class S3Handler(AsyncStorageHandlerBase):
@@ -94,10 +94,12 @@ class S3Handler(AsyncStorageHandlerBase):
             'retries': {
                 'max_attempts': num_retries,
             },
-            's3': {},
         }
+
         if addressing_style:
-            self.aio_config_params['s3']['addressing_style'] = addressing_style
+            self.aio_config_params['s3'] = {
+                'addressing_style': addressing_style
+            }
 
         if region_name:
             self.aio_config_params['region_name'] = region_name
@@ -217,6 +219,9 @@ class S3Handler(AsyncStorageHandlerBase):
 
         bucket = await self.get_bucket(s3)
         with item as f:
+            # It would be nice if there were a good way to use the async read
+            # from here, but the aioboto3 doesn't support it. Instead, the
+            # entire file contents are read into memory then transferred to S3.
             await bucket.upload_fileobj(
                 f, item.filename, ExtraArgs=extra
             )  # type: ignore
@@ -232,5 +237,5 @@ class S3Handler(AsyncStorageHandlerBase):
             async with self.resource as s3:
                 await self._async_delete(item, s3)
 
-        file_object = await s3.Object(self.bucket_name, item.filename)  # type: ignore
+        file_object = await s3.Object(self.bucket_name, item.filename)
         await file_object.delete()

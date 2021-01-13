@@ -19,10 +19,10 @@ SyncCallable = Callable[[T], R]
 MaybeAsyncCallable = Union[SyncCallable, AsyncCallable]
 
 
-def sync_to_async(fn: SyncCallable, thread_sensative=True) -> AsyncCallable:
+def sync_to_async(fn: SyncCallable, thread_sensitive=True) -> AsyncCallable:
     return cast(
         AsyncCallable,
-        sync.sync_to_async(fn, thread_sensative=thread_sensative),
+        sync.sync_to_async(fn, thread_sensitive=thread_sensitive),
     )
 
 
@@ -31,11 +31,11 @@ def async_to_sync(fn: AsyncCallable) -> SyncCallable:
 
 
 def any_to_async(
-    fn: MaybeAsyncCallable, thread_sensative=True
+    fn: MaybeAsyncCallable, thread_sensitive=True
 ) -> AsyncCallable:
     if iscoroutinefunction(fn):
         return fn
-    return sync_to_async(fn, thread_sensative=thread_sensative)
+    return sync_to_async(fn, thread_sensitive=thread_sensitive)
 
 
 def any_to_sync(fn: MaybeAsyncCallable) -> SyncCallable:

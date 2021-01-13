@@ -12,6 +12,7 @@ class DummyHandler(StorageHandlerBase):
         # the bytes that were stored to the file.
         self.files: Dict[str, bytes] = {}
         self.last_save: Optional[FileItem] = None
+        self.last_save_contents: bytes = b''
         self.last_delete: Optional[FileItem] = None
         self.validated = False
 
@@ -33,8 +34,10 @@ class DummyHandler(StorageHandlerBase):
         """Save the provided file to the given filename in the storage
         container.
         """
-        self.files[item.url_path] = item.sync_read()
-        item.sync_seek(0)
+        with item as f:
+            self.last_save_contents = f.read()
+            self.files[item.url_path] = self.last_save_contents
+            f.seek(0)
         self.last_save = item
         return item.filename
 
@@ -58,15 +61,6 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
 
     allow_async = True
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Store files where the key is the url path and the value is
-        # the bytes that were stored to the file.
-        self.files: Dict[str, bytes] = {}
-        self.last_save: Optional[FileItem] = None
-        self.last_delete: Optional[FileItem] = None
-        self.validated = False
-
     def get_file_key(self, item: FileItem) -> FileItem:
         return item.copy(data=None)
 
@@ -82,9 +76,11 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """Save the provided file to the given filename in the storage
         container. Returns the name of the file saved.
         """
-        self.files[item.url_path] = item.sync_read()
-        item.sync_seek(0)
-        self.last_save = item
+        async with item as f:
+            self.last_save_contents = await f.read()
+            self.files[item.url_path] = self.last_save_contents
+            await f.seek(0)
+            self.last_save = item
         return item.filename
 
     def assert_file_contains(

@@ -95,7 +95,8 @@ def test_path_by_div(store, handler):
     sub_b.save_data(filename='new_file.txt', data=b'As a cucumber.')
 
     item = store.handler.last_save
-    assert item.sync_read() == b'As a cucumber.'
+    with item as f:
+        assert f.read() == b'As a cucumber.'
     assert item.url_path == 'static/a/b/new_file.txt'
 
 
