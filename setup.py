@@ -30,13 +30,14 @@ setup(
     install_requires=['asgiref'],
     extras_require={
         'aio_file': ['aiofiles'],
-        's3': ['boto3'],
-        'aio_s3': ['aioboto3'],
+        's3': ['aioboto3'],
         'test': [
             'pytest',
             'mock',
             'pytest-asyncio',
             'pytest-mock',
+            'aioboto3',
+            'aiofiles',
         ],
     },
 )
