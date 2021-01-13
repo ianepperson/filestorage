@@ -4,7 +4,7 @@ A Python library to make storing files simple and easy.
 It is primarily intended to deal with file uploads to a static files directory or an object service like
 [AWS S3](https://aws.amazon.com/s3/?nc2=h_ql_prod_st_s3) or [Linode](https://www.linode.com/products/object-storage/).
 Files can by stored synchronously (for [WSGI](https://wsgi.readthedocs.io/en/latest/index.html) servers
-like [Django](https://www.djangoproject.com/) or [Pyramid](https://trypyramid.com/)) or asynchronously
+like [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com/) or [Pyramid](https://trypyramid.com/)) or asynchronously
 (for [ASGI](https://asgi.readthedocs.io/en/latest/) servers like [Starlette](https://www.starlette.io/),
 [FastAPI](https://fastapi.tiangolo.com/) or [Django Channels](https://channels.readthedocs.io/en/stable/)).
 
