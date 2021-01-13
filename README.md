@@ -16,7 +16,6 @@ Table of Contents
 =================
 
 <!--ts-->
-
    * [filestorage](#filestorage)
    * [Table of Contents](#table-of-contents)
       * [Introduction](#introduction)
@@ -34,6 +33,7 @@ Table of Contents
          * [Handlers](#handlers)
             * [LocalFileHandler](#localfilehandler)
             * [AsyncLocalFileHandler](#asynclocalfilehandler)
+            * [S3Handler](#s3handler)
             * [DummyHandler](#dummyhandler)
             * [AsyncDummyHandler](#asyncdummyhandler)
          * [Filters](#filters)
@@ -41,7 +41,7 @@ Table of Contents
             * [ValidateExtension](#validateextension)
       * [Testing](#testing)
 
-<!-- Added by: runner, at: Mon Jan 11 21:51:07 UTC 2021 -->
+<!-- Added by: runner, at: Wed Jan 13 20:26:36 UTC 2021 -->
 
 <!--te-->
 
