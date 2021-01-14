@@ -32,6 +32,11 @@ def handler():
     return S3Handler(bucket_name='bucket')
 
 
+@pytest.fixture
+def async_only_handler():
+    return S3Handler(bucket_name='bucket', allow_sync_methods=False)
+
+
 @pytest.mark.asyncio
 async def test_validate(mock_s3_resource, handler):
     await handler.validate()
@@ -94,3 +99,33 @@ def test_delete(mock_s3_resource, handler):
     handler._delete(item)
 
     assert mock_s3_resource._file_object._deleted
+
+
+# When allow_sync_methods is False, these should all throw a RuntimeError
+
+
+def test_cant_save(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._save(item)
+
+    assert str(err.value) == 'Sync save method not allowed'
+
+
+def test_cant_exists(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._exists(item)
+
+    assert str(err.value) == 'Sync exists method not allowed'
+
+
+def test_cant_delete(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._delete(item)
+
+    assert str(err.value) == 'Sync delete method not allowed'

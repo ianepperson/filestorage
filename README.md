@@ -333,7 +333,8 @@ Async OK.
 
 Parameters:
  * `base_path` - Where to store the files on the local filesystem
- * `auto_make_dir` - Automatically create the directory as needed.
+ * `auto_make_dir` (defualt: `False`)- Automatically create the directory as needed.
+ * `allow_sync_methods` (default: `True`) - When `False`, all synchronous calls throw a `RuntimeError`. Might be helpful in preventing accidentally using the sync `save`/`exists`/`delete` methods, which would block the async loop too.
 
 #### S3Handler
 
@@ -355,6 +356,7 @@ Parameters:
  * `host_url` - When using [non-AWS S3 service](https://www.google.com/search?q=s3+compatible+storage) (like [Linode](https://www.linode.com/products/object-storage/)), use this url to connect. (Example: `'https://us-east-1.linodeobjects.com'`)
  * `region_name` - Overrides any region_name defined in the [AWS configuration file](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-a-configuration-file) or  the `AWS_DEFAULT_REGION` environment variable. Required if using AWS S3 and the value is not already set elsewhere.
  * `addressing_style` - Overrides any S3.addressing_style set in the [AWS configuration file](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-a-configuration-file).
+ * `allow_sync_methods` (default: `True`) - When `False`, all synchronous calls throw a `RuntimeError`. Might be helpful in preventing accidentally using the sync `save`/`exists`/`delete` methods, which would block the async loop too.
 
 Permissions can be configured in three different ways. They can be stored in environment variables, then can be stored in a particular AWS file, or they can be passed in directly.
 
