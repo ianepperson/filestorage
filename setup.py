@@ -3,13 +3,15 @@ from setuptools import setup  # type: ignore
 with open('README.md', 'r', encoding='utf-8') as readme:
     long_description = readme.read()
 
+with open('filestorage/VERSION', 'r', encoding='utf-8') as version_file:
+    version = version_file.read().strip()
 
 setup(
     name='filestorage',
-    version='0.0.1',
+    version=version,
     author='Ian Epperson',
     author_email='ian@epperson.com',
-    description='foo',
+    description='Save uploaded files in configurable stores',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/ianepperson/filestorage',
@@ -22,7 +24,7 @@ setup(
     python_requires='>=3.5',
     platforms='any',
     package_data={
-        'filestorage': ['*.pyi', 'py.typed'],
+        'filestorage': ['*.pyi', 'py.typed', 'VERSION'],
         'filestorage.filters': ['*.pyi', 'py.typed'],
         'filestorage.handlers': ['*.pyi', 'py.typed'],
     },
