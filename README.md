@@ -10,7 +10,7 @@ like [Django](https://www.djangoproject.com/), [Flask](https://flask.palletsproj
 
 Supports multiple storage services simultaneously or even the same service with multiple configurations.
 
-Upload filters are trivial to create and a few [are included](#filters) by default.
+Upload filters are easy to create and a few [are included](#filters) by default.
 
 Table of Contents
 =================
@@ -267,7 +267,7 @@ Methods:
 
 Abstract Methods to be overridden when sub-classing:
 
- * `_apply(item: FileItem)` - Returns the filtered [FileItem](#fileitem). Could also be defined as an async method: `async _apply(item: FileItem)`. Can raise an exception if the filter fails.
+ * `_apply(item: FileItem)` - Returns the filtered [FileItem](#fileitem). It can optionally be an async method that will be awaited on. Can raise an exception if the item fails the filter.
  * `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
 
 ### FileItem
@@ -278,17 +278,25 @@ Parameters, which are also Properties:
  * `filename` - String
  * `path` - Optional tuple of the path under which the `filename` can be accessed or stored. Example: `('folder', 'subfolder')`.
  * `data` - Optional [BinaryIO](https://docs.python.org/3/library/typing.html#typing.BinaryIO) of the contents to store. Example: `BytesIO(b'contents')`.
+ * `media_type` - Optional string describing the [media (or MIME) type](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types) contained within the data. If not provided, the type will be [guessed](https://docs.python.org/3/library/mimetypes.html#mimetypes.guess_type) as needed based on the filename's extension.
 
 Properties:
  * `url_path` - Relative path and filename for use in a URL. Example: `'folder/subfolder/file.txt'`
  * `fs_path` - Relative path and filename for use in the local filesystem. Example when running on Windows: `'folder\subfolder\file.txt'`.
+ * `has_data` - `True` if data is populated.
+ * `content_type` - String indicating the `media_type` to be used in HTTP headers as needed.
 
 Methods:
  * `copy(**kwargs)` - Create a copy of this object, overriding any specific parameter. Example: `copy(filename='new_name.txt')`
  * `sync_read(size: Optional[int])` - Synchronously read and return the contained `data`.
  * `await async_read(size: Optional[int])` - Asynchronously read and return the contained `data`.
- * `sync_seek(offset: int)` - Synchronously set the reader offset to the given position.
- * `await async_seek(offset: int)` - Asynchronously set the reader offset to the given position.
+ 
+Context Manager:
+
+The FileItem can be used as a context manager, where it will modify the read/seek methods of the underlying object to fit the requested stream - either sync or async.
+
+ * `with FileItem as f` - Returns an object (`f`) that behaves as an open file. `f.read()` and `f.seek()` methods are supported.
+ * `async with FileItem as f` - Returns an object (`f`) that behaves as an async open file. `await f.read()` and `await f.seek()` methods are supported.
 
 ### Exceptions
 
