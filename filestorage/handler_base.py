@@ -192,6 +192,10 @@ class StorageHandlerBase(ABC):
 class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
     """Base class for all asynchronous storage handlers."""
 
+    def __init__(self, allow_sync_methods=True, **kwargs):
+        self.allow_sync_methods = allow_sync_methods
+        super().__init__(**kwargs)
+
     def validate(self) -> Optional[Awaitable]:
         """Validate that the configuration is set up properly and the necessary
         libraries are available.
@@ -213,6 +217,8 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         return await self._async_exists(item)
 
     def _exists(self, item: FileItem) -> bool:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync exists method not allowed')
         return utils.async_to_sync(self._async_exists)(item)
 
     @abstractmethod
@@ -228,6 +234,8 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         await self._async_delete(item)
 
     def _delete(self, item: FileItem) -> None:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync delete method not allowed')
         utils.async_to_sync(self._async_delete)(item)
 
     @abstractmethod
@@ -238,6 +246,8 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         pass
 
     def _save(self, item: FileItem) -> str:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync save method not allowed')
         return utils.async_to_sync(self._async_save)(item)
 
     @abstractmethod
