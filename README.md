@@ -77,6 +77,8 @@ from filestorage import store
 store.finalized  # == False
 ```
 
+> If you are triggered by the existance of a global store, fear not! You can make a new instance of the store using the [StorageContainer](#storagecontainer) class. `my_store = StorageContainer()`.
+
 The store can hold multiple configurations that are accessed through its indices:
 
 ```python
@@ -231,7 +233,7 @@ store['portrait'].handler.filters[0].extensions = ['jpg', 'png']
 store['not_used'].handler = None
 ```
 
-Any parameters for filters and handlers are decoded and passed in as kwargs. Anything that looks like a list, set or dict is `eval`ed and bare whole numbers are converted to `int`. Force anything to be a string by enclosing it in single or double quotes: `"50"`.
+Any parameters for filters and handlers are decoded and passed in as kwargs. Anything that looks like a list, set or dict literal is `eval`ed and bare whole numbers are converted to `int`. You can force anything to be a string by enclosing it in single or double quotes: `"50"`.
 
 The store is then usable in any [view](https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/views.html#defining-a-view-callable-as-a-function):
 
