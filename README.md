@@ -24,6 +24,8 @@ Table of Contents
             * [Configure the Store](#configure-the-store)
          * [Folders](#folders)
          * [Adding Filters](#adding-filters)
+      * [Configuration](#configuration)
+         * [Pyramid](#pyramid)
       * [Classes](#classes)
          * [StorageContainer](#storagecontainer)
          * [StorageHandler](#storagehandler)
@@ -41,7 +43,7 @@ Table of Contents
             * [ValidateExtension](#validateextension)
       * [Testing](#testing)
 
-<!-- Added by: runner, at: Wed Jan 13 21:15:41 UTC 2021 -->
+<!-- Added by: runner, at: Fri Jan 15 05:06:10 UTC 2021 -->
 
 <!--te-->
 
