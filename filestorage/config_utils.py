@@ -145,6 +145,9 @@ def unquote(value: str) -> str:
 
 
 def decode_kwarg(value) -> Any:
+    """Tries to determine what the kwarg should be. Decode lists, dicts, sets
+    and integers.
+    """
     if isinstance(value, dict):
         try:
             value = value.pop(None)
@@ -154,8 +157,10 @@ def decode_kwarg(value) -> Any:
 
     if not isinstance(value, str):
         raise ValueError(f'decode_kwarg expected a str, got: {value!r}')
-    if value.startswith('[') and value.endswith(']'):
-        # handle lists
+    if (value.startswith('[') and value.endswith(']')) or (
+        value.startswith('{') and value.endswith('}')
+    ):
+        # handle lists, sets and dicts
         try:
             return eval(value, {}, {})
         except Exception as err:
