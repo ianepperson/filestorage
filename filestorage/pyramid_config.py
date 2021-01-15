@@ -23,5 +23,5 @@ def includeme(config):
     name = config.registry.settings.get('store.name', 'store')
     config.add_request_method(get_store, name, True)
 
-    setup_from_config(store, config)
+    setup_from_config(store, config.registry.settings)
     store.finalize_config()
