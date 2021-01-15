@@ -191,6 +191,55 @@ store.save_data(filename='ignored name.txt', data=b'contents')
 
 For more on filters, see the [Filter](#filter) class definition.
 
+## Configuration
+
+### Pyramid
+
+This library can behave as a Pyramid plugin. When doing so, it will read from the Pyramid configuration and set up the handler(s) defined there. The `store` will also be available on the `request` object as `request.store`.
+
+To set it up, include `filehandler.pyramid_config` in your configuration using the [include](.https://docs.pylonsproject.org/projects/pyramid/en/latest/api/config.html#pyramid.config.Configurator.include) method.
+
+```python
+from pyramid.config import Configurator
+
+def main(global_config, **settings):
+    config = Configurator()
+    config.include('filehandler.pyramid_config')
+```
+
+Add any handler configuration to your app's config file. The handler and filters can refer to any handler or filter within `filestorage`, or can refer to any other package by full module path name.
+
+```
+[app:main]
+# (other config settings)
+
+# Base store with a custom filter
+store.handler = Dummyhandler
+store.filters[0] = myapp.filters.MyCustomFilter
+
+# Portrait store with a couple of filestorage filters
+store['portrait'].handler = LocalFileHandler
+store['portrait'].handler.base_path = /var/www/static/uploaded_images
+store['portrait'].handler.base_url = http://my.portraits/static
+store['portrait'].handler.filters[0] = RandomizeFilename
+store['portrait'].handler.filters[0] = ValidateExtension
+store['portrait'].handler.filters[0].extensions = ['jpg', 'png']
+
+# Another store that exists, but uses no handler
+store['not_used'].handler = None
+```
+
+Any parameters for filters and handlers are decoded and passed in as kwargs. Anything that looks like a list, set or dict is `eval`ed and bare whole numbers are converted to `int`. Force anything to be a string by enclosing it in single or double quotes: `"50"`.
+
+The store is then usable in any [view](https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/views.html#defining-a-view-callable-as-a-function):
+
+```python
+def save_file(request):
+    uploaded_file = request.POST['file']
+    filename = request.store.save_field(uploaded_file)
+    return Response(f'Saved to {filename}!')
+```
+
 ## Classes
 
 ### StorageContainer
