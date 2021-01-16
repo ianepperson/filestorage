@@ -219,15 +219,15 @@ Add any handler configuration to your app's config file. The handler and filters
 
 # Base store with a custom filter
 store.handler = Dummyhandler
-store.filters[0] = myapp.filters.MyCustomFilter
+store.filters[0] = myapp.filters[0].MyCustomFilter
 
 # Portrait store with a couple of filestorage filters
 store['portrait'].handler = LocalFileHandler
 store['portrait'].handler.base_path = /var/www/static/uploaded_images
 store['portrait'].handler.base_url = http://my.portraits/static
 store['portrait'].handler.filters[0] = RandomizeFilename
-store['portrait'].handler.filters[0] = ValidateExtension
-store['portrait'].handler.filters[0].extensions = ['jpg', 'png']
+store['portrait'].handler.filters[1] = ValidateExtension
+store['portrait'].handler.filters[1].extensions = ['jpg', 'png']
 
 # Another store that exists, but uses no handler
 store['not_used'].handler = None
@@ -245,8 +245,8 @@ def save_file(request):
 ```
 
 Additional optional settings:
-  * `store.name` - (Default `store`) - Name of the property to use on the request object. For example, set this to `my_store` then access the store through `request.my_store`.
-  * `store.use_global` - (Default `true`) - Use the global `store` object. If set to `false` (or `no`) then the `request.store` object will independent of the global `store` object.
+  * `store.request_property` - (Default `store`) - Name of the property to use on the request object. For example, set this to `my_store` then access the store through `request.my_store`.
+  * `store.use_global` - (Default `True`) - Use the global `store` object. If set to `False` (or `no`) then the `request.store` object will independent of the global `store` object.
 
 ## Classes
 
