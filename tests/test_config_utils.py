@@ -128,3 +128,16 @@ def test_decode_ints_and_strings(store):
 
     assert store.handler.base_url == 5
     assert store['six'].handler.base_url == '6'
+
+
+def test_suggest_filters(store):
+    settings = {
+        'store.handler': 'DummyHandler',
+        'store.handler.filter[0]': 'ValidateExtension',
+        'store.handler.filter[0].extensions': "['jpg', 'png']",
+    }
+    with pytest.raises(FilestorageConfigError) as err:
+        config_utils.setup_from_settings(settings, store)
+
+    assert 'invalid setting "store.handler.filter"' in str(err.value)
+    assert 'Did you mean "store.handler.filters"' in str(err.value)

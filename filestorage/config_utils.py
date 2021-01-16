@@ -1,5 +1,7 @@
+import difflib
+import inspect
 import importlib
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Set
 
 from filestorage import StorageHandlerBase, FilterBase, StorageContainer
 from filestorage.exceptions import FilestorageConfigError
@@ -18,6 +20,34 @@ def try_import(default_module: str, model: str):
         raise ValueError('bad class name')
 
     return cls
+
+
+def get_init_properties(cls, to_class=object) -> Set[str]:
+    """Given a class, determine the properties that class needs.
+    Assumes that each sub-class will call super with **kwargs. (Which is not a
+    good general assumption, but should work well enough for Handlers.)
+
+    cls is the class to check, to_class is the final parent class to check.
+
+    Returns a set of all parameters found.
+    """
+    result = set()
+    init = getattr(cls, '__init__', None)
+
+    if init is not None:
+        for param in inspect.signature(init).parameters.values():
+            if param.kind == param.VAR_KEYWORD:
+                # Ignore any **kwargs
+                continue
+            if param.name == 'self':
+                continue
+
+            result.add(param.name)
+
+    if issubclass(cls.mro()[1], to_class):
+        result |= get_init_properties(cls.mro()[1], to_class)
+
+    return result
 
 
 def setup_from_settings(
@@ -92,8 +122,18 @@ def get_handler(key_prefix: str, settings_dict: Dict) -> StorageHandlerBase:
     except ValueError:
         raise FilestorageConfigError(f'Pyramid settings bad value for {name}')
 
+    valid_args = get_init_properties(handler_cls, StorageHandlerBase)
+
     kwargs = {}
     for key, value in settings_dict.items():
+        if key not in valid_args:
+            maybe = difflib.get_close_matches(key, valid_args, 1)
+            maybe_txt = ''
+            if maybe:
+                maybe_txt = f' Did you mean "{name}.{maybe[0]}"?'
+            raise FilestorageConfigError(
+                f'Pyramid invalid setting "{name}.{key}". {maybe_txt}'
+            )
         if key == 'filters':
             kwargs['filters'] = get_all_filters(name, value)
         else:
