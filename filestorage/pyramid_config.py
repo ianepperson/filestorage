@@ -1,5 +1,7 @@
 """Configure the store from settings in a Pyramid configuration file.
 
+store.request_property = store
+store.use_global = False
 store.handler = S3Handler
 store.handler.bucket_name = static
 store.handler.filters[0] = RandomizeFilename
@@ -13,12 +15,6 @@ store['test'].handler.base_url = http://foo.bar
 from filestorage import store, StorageContainer
 from filestorage.config_utils import setup_from_settings
 
-pyramid_store = store
-
-
-def get_store():
-    return pyramid_store
-
 
 def includeme(config):
     store_prefix = 'store'
@@ -27,12 +23,8 @@ def includeme(config):
     settings = {
         key: value
         for (key, value) in config.registry.settings.items()
-        if key.startswith('store')
+        if key.startswith(store_prefix)
     }
-
-    # Add the store object to every request.
-    name = settings.pop(f'{store_prefix}.name', 'store')
-    config.add_request_method(callable=get_store, name=name, property=True)
 
     # Check if we should be using the global store or a local pyramid_store
     use_global_store = settings.pop('store.use_global', 'true')
@@ -42,13 +34,17 @@ def includeme(config):
             f'Expected true/false/yes/no, but got {use_global_store!r}'
         )
 
-    global pyramid_store
+    pyramid_store = store
     if use_global_store.lower() in ('false', 'no'):
         # If not using the global store, make a new store for get_store to use.
         pyramid_store = StorageContainer()
-    else:
-        # Reaffirm that pyramid_store is the store
-        pyramid_store = store
+
+    def get_store():
+        return pyramid_store
+
+    # Add the store object to every request.
+    name = settings.pop(f'{store_prefix}.request_property', 'store')
+    config.add_request_method(callable=get_store, name=name, property=True)
 
     if setup_from_settings(settings, pyramid_store):
         # If there were settings, finalize the config
