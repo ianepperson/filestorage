@@ -303,6 +303,10 @@ class Folder(AsyncStorageHandlerBase):
     def filters(self) -> List[FilterBase]:
         return self._store.sync_handler.filters
 
+    @property
+    def base_url(self) -> str:
+        return self._store.sync_handler.base_url
+
     def __init__(self, store: 'StorageContainer', path: Tuple[str, ...]):
         super().__init__(path=path)
         self._store = store

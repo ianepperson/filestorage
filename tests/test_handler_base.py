@@ -223,3 +223,11 @@ def test_filter_class_not_instance():
         'Filter MockFilter is a class, not an instance. '
         'Did you mean to use "filters=[MockFilter()]" instead?'
     )
+
+
+def test_subfolder_get_url(store):
+    store.handler = DummyHandler(base_url='http://foo.bar')
+    subfolder = store / 'folder'
+
+    assert subfolder.base_url == 'http://foo.bar'
+    assert subfolder.get_url('test.txt') == 'http://foo.bar/folder/test.txt'
