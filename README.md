@@ -213,13 +213,13 @@ def main(global_config, **settings):
 
 Add any handler configuration to your app's config file. The handler and filters can refer to any handler or filter within `filestorage`, or can refer to any other package by full module path name.
 
-```
+```ini
 [app:main]
 # (other config settings)
 
 # Base store with a custom filter
 store.handler = Dummyhandler
-store.filters[0] = myapp.filters[0].MyCustomFilter
+store.filters[0] = myapp.filters.MyCustomFilter
 
 # Portrait store with a couple of filestorage filters
 store['portrait'].handler = LocalFileHandler
