@@ -244,6 +244,10 @@ def save_file(request):
     return Response(f'Saved to {filename}!')
 ```
 
+Additional optional settings:
+  * `store.name` - (Default `store`) - Name of the property to use on the request object. For example, set this to `my_store` then access the store through `request.my_store`.
+  * `store.use_global` - (Default `true`) - Use the global `store` object. If set to `false` (or `no`) then the `request.store` object will independent of the global `store` object.
+
 ## Classes
 
 ### StorageContainer
