@@ -129,3 +129,26 @@ def test_cant_delete(async_only_handler):
         async_only_handler._delete(item)
 
     assert str(err.value) == 'Sync delete method not allowed'
+
+
+@pytest.mark.asyncio
+async def test_async_save_in_folder(mock_s3_resource, handler):
+    item = handler.get_item(
+        'foo.txt', data=BytesIO(b'contents'), subpath=('folder',)
+    )
+
+    await handler._async_save(item)
+
+    assert (
+        mock_s3_resource._bucket._upload_fileobj_filename == 'folder/foo.txt'
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_delete_in_folder(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', subpath=('folder',))
+
+    await handler._async_delete(item)
+
+    assert mock_s3_resource._file_object._deleted
+    assert mock_s3_resource._file_object._filename == 'folder/foo.txt'

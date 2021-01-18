@@ -223,7 +223,7 @@ class S3Handler(AsyncStorageHandlerBase):
             # from here, but the aioboto3 doesn't support it. Instead, the
             # entire file contents are read into memory then transferred to S3.
             await bucket.upload_fileobj(
-                f, item.filename, ExtraArgs=extra
+                f, item.url_path, ExtraArgs=extra
             )  # type: ignore
 
         return item.filename
@@ -237,5 +237,5 @@ class S3Handler(AsyncStorageHandlerBase):
             async with self.resource as s3:
                 await self._async_delete(item, s3)
 
-        file_object = await s3.Object(self.bucket_name, item.filename)
+        file_object = await s3.Object(self.bucket_name, item.url_path)
         await file_object.delete()
