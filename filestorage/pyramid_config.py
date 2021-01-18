@@ -39,7 +39,7 @@ def includeme(config):
         # If not using the global store, make a new store for get_store to use.
         pyramid_store = StorageContainer()
 
-    def get_store():
+    def get_store(request):
         return pyramid_store
 
     # Add the store object to every request.

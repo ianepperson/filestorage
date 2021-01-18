@@ -26,7 +26,8 @@ class MockPyramidConfig:
         self._request_methods[name] = callable
 
     def get_request_prop(self, name):
-        return self._request_methods[name]()
+        very_dummy_request = {}
+        return self._request_methods[name](very_dummy_request)
 
 
 def test_pyramid_includeme():
