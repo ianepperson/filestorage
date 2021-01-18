@@ -1,6 +1,8 @@
 # filestorage
 A Python library to make storing files simple and easy.
 
+> :warning: Although there are extensive tests within this project for Python 3.7, 3.8 and 3.9, it is a young project and there may be bugs and security holes. Be sure and test thoroughly prior to use in a production environment.
+
 It is primarily intended to deal with file uploads to a static files directory or an object service like
 [AWS S3](https://aws.amazon.com/s3/?nc2=h_ql_prod_st_s3) or [Linode](https://www.linode.com/products/object-storage/).
 Files can by stored synchronously (for [WSGI](https://wsgi.readthedocs.io/en/latest/index.html) servers
@@ -287,14 +289,14 @@ Methods:
  * Synchronous methods:
    * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
    * `delete(filename: str)` - Deletes the given file from the store.
-   * `save_file(data: BinaryIO, filename: str)` - Save the binary IO object to the given file.
-   * `save_data(data: bytes, filename: str)` - Save the binary data to the given file.
+   * `save_file(filename: str, data: BinaryIO)` - Save the binary IO object to the given file.
+   * `save_data(filename: str, data: bytes)` - Save the binary data to the given file.
    * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
  * Asynchronous methods: (all will throw a `FilestorageConfigError` if the handler doesn't support async operations.)
    * `async_exists(filename: str)` - Awaitable version
    * `async_delete(filename: str)` - Awaitable version
-   * `async_save_file(data: BinaryIO, filename: str)` - Awaitable version
-   * `async_save_data(data: binary, filename: str)` - Awaitable version
+   * `async_save_file(filename: str, data: BinaryIO)` - Awaitable version
+   * `async_save_data(filename: str, data: binary)` - Awaitable version
    * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
 
 Abstract Methods to be overridden when sub-classing:
