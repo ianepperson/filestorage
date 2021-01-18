@@ -69,15 +69,14 @@ The extras are:
 
 ### The Store
 
-Interaction with the library is primarily accomplished through a global [`store`](#storagecontainer) object. Any file can access this object by
-simply importing it.
+Interaction with the library is primarily accomplished through a global [`store`](#storagecontainer) object. Any Python file can access this global object by importing it.
 
 ```python
 from filestorage import store
 store.finalized  # == False
 ```
 
-> If you are triggered by the existance of a global store, fear not! You can make a new instance of the store using the [StorageContainer](#storagecontainer) class. `my_store = StorageContainer()`.
+> If you are uncomfortable by the existance of a global store, fear not! You can make a new instance of the store using the [StorageContainer](#storagecontainer) class. `my_store = StorageContainer()`, the use that in your program.
 
 The store can hold multiple configurations that are accessed through its indices:
 
@@ -88,8 +87,8 @@ store['more']['and more'].finalized  # == False
 PORTRAIT_STORE = store['portraits']  # global variable for later use!
 ```
 
-The store and any of its other sub-configurations can be saved and referenced prior to setting up any configuration.
-This allows the store or any other sub-configuration to be imported in any file and stored in global variables as
+The store and any of its other sub-configurations can be saved and referenced _prior_ to setting up any configuration.
+This allows the store or any other sub-configuration to be imported anywhere and stored within global variables as
 needed.
 
 Trying to use the store to save files prior to providing it a handler will result in an error.
@@ -104,9 +103,8 @@ So it's time to give it a [handler](#handler).
 
 #### Configure the Store
 
-Although any file can import the [store](#storagecontainer), it will not actually be usable until you provide it some kind of configuration.
-You do this by giving the store a handler. The library includes a few kinds of [handlers](#handlers) with different configuration setups,
-but for testing it's easiest to just use the [DummyHandler](#dummyhandler):
+Although any file can import the [store](#storagecontainer), it will not actually be usable until it is provided some kind of configuration.
+You do this by giving the store a handler. This library includes a few kinds of [handlers](#handlers) with different configuration setups. For testing it's easiest to use the [DummyHandler](#dummyhandler):
 
 ```python
 from filestore.handlers import DummmyHandler
@@ -114,11 +112,11 @@ store.handler = DummyHandler()
 store['portraits'] = DummyHandler()
 ```
 
-The DummyHandler doesn't need any other configuration, and now it allows the store to be used across the entire project!
-You would normally perform this configuration after all files have been imported but before your app starts up. Different
-servers (Pyramid/Django/Starlette) will have different mechanisms for this.
+The DummyHandler doesn't need any other configuration and just stores any saved files in memory.
 
-Now you can try to save some data into the store and watch it work:
+In your app, you would would normally perform this configuration after all files have been imported but before the app starts - for instance in an initialization step where the app configuration is read. Different frameworks (Pyramid/Django/Starlette) will have different mechanisms for this.
+
+Now you can try to save some data into the store:
 
 ```python
 store.save_data(filename='file.txt', data=b'spamity spam')
@@ -130,12 +128,10 @@ store.exists(filename='file.txt')
 # True
 ```
 
-When saving a file, the save methods return the text of the filename that was saved. Some handlers and filters might adjust the filename in different ways and
-the return value for the save methods give you that feedback.
+Handlers and filters might adjust the filename in the process of storing the file. The return value gives you feedback of the actual name of the file that was saved to the store. This might be useful for storing in a database for later reference.
 
-You can set and reset the handler several times. When you want to lock in the configuration, you need to finalize the store.
-When you do so, it will check to ensure that the handler is set for the root and any sub-configurations. If any handler is
-missing, the finalization will throw a configuration error. Any attempts to set a handler after this step will throw an error.
+You can set and reset the handler several times. When you want to lock in the configuration and prevent further changes, you need to finalize the store.
+When you do so, all handlers and filters will validate their configuration and if any handlers are missing a configuration error will be thrown.  Any attempts to set a handler after this step will throw an error. This ensures that the store is properly set up once and only once.
 
 ```python
 store.finalize_config()
@@ -146,9 +142,9 @@ store.handler = DummyHandler()
 
 The finalization step also will validate any handler configuration.
 For instance, the [local file handler](#localfilehandler) ensures its configured directory
-exists, the [async file handler](#asynclocalfilehandler) ensures the proper libraries are installed and the S3 handler verifies the credentials.
+exists, the [async file handler](#asynclocalfilehandler) ensures the proper libraries are installed and the S3 handler verifies the credentials by saving and deleting a dummy file in the bucket.
 
-If you want to never use the store or one of the sub-stores, you should explicitly indicate that it should not be used. For instance, suppose
+If the store or one of the sub-stores are not intended to be used, they must explicitly have their handler set to `None`. For instance, suppose
 you want to use two different configurations, but don't want to use the store's base config. You can do:
 
 ```python
@@ -181,9 +177,9 @@ store['portraits'].handler = store / 'portraits'
 
 ### Adding Filters
 
-Filters allow mutating a file to be stored to a Handler. They are called in the order defined, and a few filters are provided to handle custom scenarios.
+Filters allow mutating a file to be stored to a Handler. They are called in the order defined and a few filters are provided by this library.
 
-It's often best not to simply store filenames provided by random Internet uploads. Although this library does scrub the filename, it's not as fool-proof as simply ignoring the provided filename and using a random string with a consistent length. The [RandomizeFilename](#randomizefilename) filter does just that.
+For instance, it's often best not to simply store filenames provided by random Internet uploads. Although this library does scrub the filename, it's not as fool-proof as simply ignoring the provided filename and using a random string with a consistent length. The [RandomizeFilename](#randomizefilename) filter does just that.
 
 ```python
 from filestorage.filters import RandomizeFilename
@@ -201,25 +197,26 @@ For more on filters, see the [Filter](#filter) class definition.
 
 This library can behave as a Pyramid plugin. When doing so, it will read from the Pyramid configuration and set up the handler(s) defined there. The `store` will also be available on the `request` object as `request.store`.
 
-To set it up, include `filehandler.pyramid_config` in your configuration using the [include](.https://docs.pylonsproject.org/projects/pyramid/en/latest/api/config.html#pyramid.config.Configurator.include) method.
+To set it up, include `filestorage.pyramid_config` in your configuration using the [Pyramid Configurator's include](.https://docs.pylonsproject.org/projects/pyramid/en/latest/api/config.html#pyramid.config.Configurator.include) method.
 
 ```python
 from pyramid.config import Configurator
 
 def main(global_config, **settings):
     config = Configurator()
-    config.include('filehandler.pyramid_config')
+    config.include('filestorage.pyramid_config'). # <---
+    ...
 ```
 
-Add any handler configuration to your app's config file. The handler and filters can refer to any handler or filter within `filestorage`, or can refer to any other package by full module path name.
+Add any handler configuration to your app's config file. The handler and filters can refer to any handler or filter within `filestorage`, or can refer to any other package by full module path and model name.
 
 ```ini
 [app:main]
 # (other config settings)
 
-# Base store with a custom filter
-store.handler = Dummyhandler
-store.filters[0] = myapp.filters.MyCustomFilter
+# Base store with a custom handler and a custom filter
+store.handler = myapp.filestorage.MyCustomHandler
+store.filters[0] = myapp.filestorage.MyCustomFilter
 
 # Portrait store with a couple of filestorage filters
 store['portrait'].handler = LocalFileHandler
@@ -229,7 +226,7 @@ store['portrait'].handler.filters[0] = RandomizeFilename
 store['portrait'].handler.filters[1] = ValidateExtension
 store['portrait'].handler.filters[1].extensions = ['jpg', 'png']
 
-# Another store that exists, but uses no handler
+# Another store that exists, but has been disabled.
 store['not_used'].handler = None
 ```
 
@@ -246,11 +243,13 @@ def save_file(request):
 
 Additional optional settings:
   * `store.request_property` - (Default `store`) - Name of the property to use on the request object. For example, set this to `my_store` then access the store through `request.my_store`.
-  * `store.use_global` - (Default `True`) - Use the global `store` object. If set to `False` (or `no`) then the `request.store` object will independent of the global `store` object.
+  * `store.use_global` - (Default `True`) - Use the global `store` object. If set to `False` then the `request.store` object will independent of the global `store` object.
 
 ## Classes
 
 ### StorageContainer
+
+This is the class for the global `store` object.
 
 Methods:
 
@@ -271,17 +270,19 @@ Once the handler is set, the store object can be used as a `StorageHandler` obje
 
 All handlers inherit from `StorageHandlerBase`.
 
-The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase` by itself can ONLY be used for synchronous operations. To make a new custom handler, See the [handler template](../master/filestorage/handlers/_template.py).
+The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase` by itself can only be used for synchronous operations and any `async_*` method calls will throw an error. To make a new custom handler, start with the [handler template](../master/filestorage/handlers/_template.py).
+
+> :warning: __Ensure your forms include the attribute enctype=”multipart/form-data”__ or your uploaded files will be empty. [Short example](https://html.com/attributes/form-enctype/) and [more detail](https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects#sending_files_using_a_formdata_object).
 
 Parameters:
 
- * `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`.
+ * `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not set, the `get_url` method will only return the path string, not the full URL.
  * `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
  * `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
 
 Methods:
 
- * `get_url(filename: str)` - Return the full URL of the given filename.
+ * `get_url(filename: str)` - Return the full URL of the given filename. If the `base_url` parameter isn't set, will only return the path string instead of the full URL.
  * `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
  * Synchronous methods:
    * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
@@ -306,11 +307,11 @@ Abstract Methods to be overridden when sub-classing:
  * Asynchronous methods:
    * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
    * `async _async_delete(item: FileItem)` - async version.
-   * `async _async_save(item: FileItem)` - async version, optionally returns the new name if the name changed.
+   * `async _async_save(item: FileItem)` - async version, returns the stored filename.
 
 ### Filter
 
-The `FilterBase` is used as a base class for any Filters. These are not intended to be used directly, but to be passed as an optional list to a Handler through the `filters` parameter. See the [filter template](../master/filestorage/filters/_template.py).
+The `FilterBase` is used as a base class for any Filters. These are not intended to be used directly, but to be passed as an optional list to a Handler through the `filters` parameter. To make a new custom filter, start with the [filter template](../master/filestorage/filters/_template.py).
 
 Properties:
 
@@ -344,13 +345,11 @@ Properties:
  * `content_type` - String indicating the `media_type` to be used in HTTP headers as needed.
 
 Methods:
- * `copy(**kwargs)` - Create a copy of this object, overriding any specific parameter. Example: `copy(filename='new_name.txt')`
- * `sync_read(size: Optional[int])` - Synchronously read and return the contained `data`.
- * `await async_read(size: Optional[int])` - Asynchronously read and return the contained `data`.
+ * `copy(**kwargs)` - Create a copy of this object, overriding any specific parameter. Example: `item.copy(filename='new_name.txt')`. This is very useful in a Filter that changes the filename or other properties.
  
 Context Manager:
 
-The FileItem can be used as a context manager, where it will modify the read/seek methods of the underlying object to fit the requested stream - either sync or async.
+The FileItem can be used as a context manager, where it will modify the read/seek methods of the underlying object to fit the requested stream as necessary - either sync or async.
 
  * `with FileItem as f` - Returns an object (`f`) that behaves as an open file. `f.read()` and `f.seek()` methods are supported.
  * `async with FileItem as f` - Returns an object (`f`) that behaves as an async open file. `await f.read()` and `await f.seek()` methods are supported.
@@ -370,7 +369,7 @@ from filestorage.exceptions import FilestorageError
 
 ### Handlers
 
-All handlers are subclasses of the [StorageHandler](#storagehandler) class. These are importable via the `handlers` sub-package. For example:
+All handlers are subclasses of the [StorageHandler](#storagehandler) class. These can be imported via the `handlers` sub-package. For example:
 
 ```python
 from filestorage.handlers import LocalFileHandler
