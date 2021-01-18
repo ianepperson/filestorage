@@ -160,7 +160,7 @@ class StorageHandlerBase(ABC):
         """
         pass
 
-    def save_file(self, data: BinaryIO, filename: str) -> str:
+    def save_file(self, filename: str, data: BinaryIO) -> str:
         """Verifies that the provided filename is legitimate and saves it to
         the storage container.
 
@@ -180,13 +180,13 @@ class StorageHandlerBase(ABC):
             raise RuntimeError('No file data in the field')
 
         return self.save_file(
-            cast(BinaryIO, field.file), field.filename or 'file'
+            field.filename or 'file', cast(BinaryIO, field.file)
         )
 
-    def save_data(self, data: bytes, filename: str) -> str:
+    def save_data(self, filename: str, data: bytes) -> str:
         """Save a file from the byte data provided."""
         fileio = BytesIO(data)
-        return self.save_file(fileio, filename)
+        return self.save_file(filename, fileio)
 
 
 class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
@@ -257,7 +257,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         """
         pass
 
-    async def async_save_file(self, data: BinaryIO, filename: str) -> str:
+    async def async_save_file(self, filename: str, data: BinaryIO) -> str:
         """Verifies that the provided filename is legitimate and saves it to
         the storage container.
 
@@ -279,13 +279,13 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
             raise RuntimeError('No file data in the field')
 
         return await self.async_save_file(
-            cast(BinaryIO, field.file), field.filename or 'file'
+            field.filename or 'file', cast(BinaryIO, field.file)
         )
 
-    async def async_save_data(self, data: bytes, filename: str) -> str:
+    async def async_save_data(self, filename: str, data: bytes) -> str:
         """Save a file from the byte data provided."""
         fileio = BytesIO(data)
-        return await self.async_save_file(fileio, filename)
+        return await self.async_save_file(filename, fileio)
 
 
 class Folder(AsyncStorageHandlerBase):
