@@ -13,6 +13,8 @@ from typing import Any
 store: Any
 
 # Names in __all__ with no definition:
+#   config_utils
 #   exceptions
 #   filters
 #   handlers
+#   pyramid_config
