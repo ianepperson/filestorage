@@ -5,7 +5,7 @@ from typing import NamedTuple, Optional, Tuple, BinaryIO
 from . import utils
 
 
-class SyncReader(BinaryIO):
+class SyncReader:
     def __init__(self, item: 'FileItem'):
         self.data = item.data
         self.filename = item.filename

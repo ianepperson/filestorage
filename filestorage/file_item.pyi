@@ -1,8 +1,7 @@
-import abc
 from . import utils as utils
 from typing import Any, BinaryIO, NamedTuple, Optional, Tuple
 
-class SyncReader(BinaryIO, metaclass=abc.ABCMeta):
+class SyncReader:
     data: Any = ...
     filename: Any = ...
     def __init__(self, item: FileItem) -> None: ...
