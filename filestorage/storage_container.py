@@ -1,5 +1,5 @@
-from asyncio import gather, get_event_loop, isfuture, iscoroutine
-from typing import Awaitable, cast, Dict, List, Optional, Union
+from asyncio import get_event_loop, isfuture, iscoroutine
+from typing import Awaitable, cast, Dict, Optional, Union
 
 from .exceptions import FilestorageConfigError
 from .handler_base import (
@@ -102,14 +102,8 @@ class StorageContainer(Folder):
         handler.handler_name = self._name
         self._handler = handler
 
-    def finalize_config(
-        self, coroutines: Optional[List[Awaitable]] = None
-    ) -> None:
-        """Validate the config and prevent any further config changes.
-
-        If any of the validation returns a coroutine, add it to the coroutines
-        list for running in parallel.
-        """
+    async def async_finalize_config(self) -> None:
+        """Validate the config and prevent any further config changes."""
         if self._finalized:
             return
 
@@ -121,27 +115,23 @@ class StorageContainer(Folder):
                 f'No handler provided for store{self.name}'
             )
 
-        # Indicate that this instance of the method should await any coroutines
-        should_await = False
-        if coroutines is None:
-            should_await = True
-            coroutines = []
-
         result = self._handler.validate()
         if iscoroutine(result) or isfuture(result):
-            coroutines.append(cast(Awaitable, result))
-
-        for child in self._children.values():
-            child.finalize_config(coroutines)
-
-        if should_await and coroutines:
-            # Get the coroutines to run in parallel
-            results = gather(*coroutines)
-            # Run them to completion before returning (synchronously)
-            event_loop = get_event_loop()
-            event_loop.run_until_complete(results)
+            await cast(Awaitable, result)
 
         self._finalized = True
+
+        for child in self._children.values():
+            await child.async_finalize_config()
+
+    def finalize_config(self) -> None:
+        event_loop = get_event_loop()
+        if event_loop.is_running():
+            raise FilestorageConfigError(
+                'Async event loop is already running. '
+                'Must await store.async_finalize_config() instead.'
+            )
+        event_loop.run_until_complete(self.async_finalize_config())
 
     def __getitem__(self, key: str) -> 'StorageContainer':
         """Get or create a storage container as a lookup.
