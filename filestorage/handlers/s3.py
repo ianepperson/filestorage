@@ -123,11 +123,14 @@ class S3Handler(AsyncStorageHandlerBase):
         # or a config file at ~/.aws.config:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/
         #  guide/configuration.html#using-a-configuration-file
+
+        # Convert these secrets to str to support some secret handlers that
+        # only provide the values when asked for as strings.
         if self.aws_access_key_id:
             self.__memoized_conn_options.update(
                 {
-                    'aws_access_key_id': self.aws_access_key_id,
-                    'aws_secret_access_key': self.aws_secret_access_key,
+                    'aws_access_key_id': str(self.aws_access_key_id),
+                    'aws_secret_access_key': str(self.aws_secret_access_key),
                 }
             )
             # Not well hidden, but might as well make it less visible
@@ -135,18 +138,19 @@ class S3Handler(AsyncStorageHandlerBase):
             self.aws_access_key_id = '(hidden)'
 
         if self.aws_session_token:
-            self.__memoized_conn_options[
-                'aws_session_token'
-            ] = self.aws_session_token
+            self.__memoized_conn_options['aws_session_token'] = str(
+                self.aws_session_token
+            )
             self.aws_session_token = '(hidden)'
 
         if self.profile_name:
-            self.__memoized_conn_options['profile_name'] = self.profile_name
+            self.__memoized_conn_options['profile_name'] = str(
+                self.profile_name
+            )
 
         # The endpoint_url isn't part of the configuration.
         if self.host_url:
-            self.__memoized_conn_options['endpoint_url'] = self.host_url
-
+            self.__memoized_conn_options['endpoint_url'] = str(self.host_url)
         return self.__memoized_conn_options
 
     async def _validate(self) -> Optional[Awaitable]:
