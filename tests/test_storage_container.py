@@ -4,7 +4,7 @@ import pytest
 from mock import Mock
 
 from filestorage import StorageContainer, store as default_store
-from filestorage.handlers import DummyHandler
+from filestorage.handlers import DummyHandler, AsyncDummyHandler
 from filestorage.exceptions import FilestorageConfigError
 
 
@@ -20,7 +20,7 @@ def handler(store):
 
 @pytest.fixture
 def async_handler(store):
-    handler = DummyHandler()
+    handler = AsyncDummyHandler()
     handler.validate = Mock()
     handler.validate.return_value = Future()
     handler.validate.return_value.set_result(None)
@@ -66,6 +66,30 @@ def test_validate_async_handler(store, handler, async_handler):
     store.finalize_config()
 
     async_handler.validate.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_async_validate(store, async_handler):
+    """Some frameworks validate in an async thread. Ensure that works"""
+    store.handler = async_handler
+
+    await store.async_finalize_config()
+
+    async_handler.validate.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_async_validate_error(store, async_handler):
+    """Some frameworks validate in an async thread. Ensure that works"""
+    store.handler = async_handler
+
+    with pytest.raises(FilestorageConfigError) as err:
+        await store.finalize_config()
+
+    assert (
+        str(err.value) == "Async event loop is already running. "
+        "Must await store.async_finalize_config() instead."
+    )
 
 
 def test_child_stores_naming(store):

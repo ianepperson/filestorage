@@ -142,6 +142,11 @@ store.handler = DummyHandler()
 # FilestorageConfigError: Setting store.handler: store already finalized!
 ```
 
+If using an ASGI server, you may need to instead use an [async startup task](https://www.starlette.io/events/) that contains:
+```python
+await store.async_finalize_config()
+```
+
 The finalization step also will validate any handler configuration.
 For instance, the [local file handler](#localfilehandler) ensures its configured directory
 exists, the [async file handler](#asynclocalfilehandler) ensures the proper libraries are installed and the S3 handler verifies the credentials by saving and deleting a dummy file in the bucket.
@@ -259,6 +264,7 @@ Methods:
  * `sync_handler` - Gets the configured handler as a sync-only handler. Raises an exception if no `handler` has been set.
  * `async_handler` - Gets the configured handler as an async-only handler. Raises an exception if no `handler` has been set or if the configured handler can't be used asynchronously.
  * `finalize_config()` - Walk through all configured objects and check to ensure they have a valid configuration. Lock the `StorageContainer` to prevent any further configuration changes. Will raise a `FilestorageConfigError` if there's a configuration problem.
+ * `async_finalize_config()` - awaitable version of the above call. Necessary for ASGI servers.
  * `finalized` - `True` if the config has been finalized, `False` otherwise.
  * `do_not_use` - `True` if the `handler` has been set to `None`, `False` otherwise.
  * `name` - String name of how this configuration is accessed. `store['a'].name == "['a']"`.
