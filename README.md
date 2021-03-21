@@ -278,15 +278,22 @@ Once the handler is set, the store object can be used as a `StorageHandler` obje
 
 All handlers inherit from `StorageHandlerBase`.
 
-The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase` by itself can only be used for synchronous operations and any `async_*` method calls will throw an error. To make a new custom handler, start with the [handler template](../master/filestorage/handlers/_template.py).
+The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase`
+by itself can only be used for synchronous operations and any `async_*` method calls will throw an error. To make a new
+custom handler, start with the [handler template](../master/filestorage/handlers/_template.py).
 
 > :warning: __Ensure your forms include the attribute enctype=”multipart/form-data”__ or your uploaded files will be empty. [Short example](https://html.com/attributes/form-enctype/) and [more detail](https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects#sending_files_using_a_formdata_object).
 
 Parameters:
 
- * `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not set, the `get_url` method will only return the path string, not the full URL.
- * `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
- * `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
+* `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not
+  set, the `get_url` method will only return the path string, not the full URL.
+* `path` - Optional list or string - The path within the store (and URL) for any saved file. For
+  example: `['folder', 'subfolder']`
+* `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler.
+  For example: `[RandomizeFilename()]`
+
+> :warning: All time related methods return the specified time in the timezone of the handler.
 
 Methods:
 
