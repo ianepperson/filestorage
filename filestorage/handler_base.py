@@ -29,10 +29,10 @@ class StorageHandlerBase(ABC):
     """Base class for all storage handlers."""
 
     def __init__(
-            self,
-            base_url: Optional[str] = None,
-            filters: Optional[List[FilterBase]] = None,
-            path: Union[Tuple[str, ...], List[str], str, None] = None,
+        self,
+        base_url: Optional[str] = None,
+        filters: Optional[List[FilterBase]] = None,
+        path: Union[Tuple[str, ...], List[str], str, None] = None,
     ):
         self.handler_name: Optional[str] = None
         self._base_url = base_url
@@ -95,10 +95,10 @@ class StorageHandlerBase(ABC):
         pass
 
     def get_item(
-            self,
-            filename: str,
-            subpath: Optional[Tuple[str, ...]] = None,
-            data: Optional[BinaryIO] = None,
+        self,
+        filename: str,
+        subpath: Optional[Tuple[str, ...]] = None,
+        data: Optional[BinaryIO] = None,
     ) -> FileItem:
         path = self._path
         if subpath is not None:
@@ -450,9 +450,9 @@ class Folder(AsyncStorageHandlerBase):
 
     def __eq__(self, other) -> bool:
         return (
-                isinstance(other, Folder)
-                and (self._store is other._store)
-                and (self._path == other._path)
+            isinstance(other, Folder)
+            and (self._store is other._store)
+            and (self._path == other._path)
         )
 
     def __truediv__(self, other: str) -> 'Folder':

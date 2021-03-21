@@ -38,7 +38,7 @@ class DummyHandler(StorageHandlerBase):
         return len(self.files[item.url_path]['contents'])
 
     def assert_size(
-            self, filename: str, path: Tuple[str, ...], size: int
+        self, filename: str, path: Tuple[str, ...], size: int
     ) -> None:
         """Assert that given file size is equal to the anticipated size."""
         assert self._size(FileItem(filename=filename, path=path)) == size
@@ -48,12 +48,12 @@ class DummyHandler(StorageHandlerBase):
         return self.files[item.url_path]['atime']
 
     def assert_get_accessed_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file access time is equal to the anticipated time."""
         assert (
-                self._get_accessed_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_accessed_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     def _get_created_time(self, item: FileItem) -> bool:
@@ -61,12 +61,12 @@ class DummyHandler(StorageHandlerBase):
         return self.files[item.url_path]['ctime']
 
     def assert_get_created_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file creation time is equal to the anticipated time."""
         assert (
-                self._get_created_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_created_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     def _get_modified_time(self, item: FileItem) -> bool:
@@ -74,12 +74,12 @@ class DummyHandler(StorageHandlerBase):
         return self.files[item.url_path]['mtime']
 
     def assert_get_modified_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file modification time is equal to the anticipated time."""
         assert (
-                self._get_modified_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_modified_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     def _save(self, item: FileItem) -> str:
@@ -134,7 +134,7 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         return len(self.files[item.url_path]['contents'])
 
     def assert_size(
-            self, filename: str, path: Tuple[str, ...], size: int
+        self, filename: str, path: Tuple[str, ...], size: int
     ) -> None:
         """Assert that given file size is equal to the anticipated size."""
         assert self._size(FileItem(filename=filename, path=path)) == size
@@ -144,12 +144,12 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         return self.files[item.url_path]['atime']
 
     def assert_get_accessed_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file access time is equal to the anticipated time."""
         assert (
-                self._get_accessed_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_accessed_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     async def _async_get_created_time(self, item: FileItem) -> bool:
@@ -157,12 +157,12 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         return self.files[item.url_path]['ctime']
 
     def assert_get_created_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file creation time is equal to the anticipated time."""
         assert (
-                self._get_created_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_created_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     async def _async_get_modified_time(self, item: FileItem) -> bool:
@@ -170,12 +170,12 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         return self.files[item.url_path]['mtime']
 
     def assert_get_modified_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None:
         """Assert that given file modification time is equal to the anticipated time."""
         assert (
-                self._get_modified_time(FileItem(filename=filename, path=path))
-                == date
+            self._get_modified_time(FileItem(filename=filename, path=path))
+            == date
         )
 
     async def _async_save(self, item: FileItem) -> str:

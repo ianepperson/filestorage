@@ -16,19 +16,19 @@ class DummyHandler(StorageHandlerBase):
     def get_file_key(self, item: FileItem) -> FileItem: ...
     def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None: ...
     def assert_size(
-            self, filename: str, path: Tuple[str, ...], size: int
+        self, filename: str, path: Tuple[str, ...], size: int
     ) -> None: ...
     def assert_get_accessed_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_get_created_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_get_modified_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_file_contains(
-            self, filename: str, path: Tuple[str, ...], data: bytes
+        self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None: ...
 
 class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
@@ -36,17 +36,17 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
     def get_file_key(self, item: FileItem) -> FileItem: ...
     def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None: ...
     def assert_size(
-            self, filename: str, path: Tuple[str, ...], size: int
+        self, filename: str, path: Tuple[str, ...], size: int
     ) -> None: ...
     def assert_get_accessed_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_get_created_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_get_modified_time(
-            self, filename: str, path: Tuple[str, ...], date: datetime
+        self, filename: str, path: Tuple[str, ...], date: datetime
     ) -> None: ...
     def assert_file_contains(
-            self, filename: str, path: Tuple[str, ...], data: bytes
+        self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None: ...

@@ -82,7 +82,10 @@ async def test_async_get_accessed_time(mock_s3_resource, handler):
     with pytest.raises(NotImplementedError) as err:
         await handler._async_get_accessed_time(item)
 
-    assert str(err.value) == 'get_accessed_time is not supported with the S3 handler'
+    assert (
+        str(err.value)
+        == 'get_accessed_time is not supported with the S3 handler'
+    )
 
 
 def test_get_accessed_time(mock_s3_resource, handler):
@@ -91,7 +94,10 @@ def test_get_accessed_time(mock_s3_resource, handler):
     with pytest.raises(NotImplementedError) as err:
         handler._get_accessed_time(item)
 
-    assert str(err.value) == 'get_accessed_time is not supported with the S3 handler'
+    assert (
+        str(err.value)
+        == 'get_accessed_time is not supported with the S3 handler'
+    )
 
 
 @pytest.mark.asyncio
@@ -101,7 +107,10 @@ async def test_async_get_created_time(mock_s3_resource, handler):
     with pytest.raises(NotImplementedError) as err:
         await handler._async_get_created_time(item)
 
-    assert str(err.value) == 'get_created_time is not supported with the S3 handler'
+    assert (
+        str(err.value)
+        == 'get_created_time is not supported with the S3 handler'
+    )
 
 
 def test_get_created_time(mock_s3_resource, handler):
@@ -110,7 +119,10 @@ def test_get_created_time(mock_s3_resource, handler):
     with pytest.raises(NotImplementedError) as err:
         handler._get_created_time(item)
 
-    assert str(err.value) == 'get_created_time is not supported with the S3 handler'
+    assert (
+        str(err.value)
+        == 'get_created_time is not supported with the S3 handler'
+    )
 
 
 @pytest.mark.asyncio
@@ -241,7 +253,7 @@ async def test_async_save_in_folder(mock_s3_resource, handler):
     await handler._async_save(item)
 
     assert (
-            mock_s3_resource._bucket._upload_fileobj_filename == 'folder/foo.txt'
+        mock_s3_resource._bucket._upload_fileobj_filename == 'folder/foo.txt'
     )
 
 

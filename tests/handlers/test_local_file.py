@@ -117,7 +117,9 @@ def test_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item('test.txt')
     atime = handler.get_accessed_time('test.txt')
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_get_created_time(directory):
@@ -127,7 +129,9 @@ def test_local_file_handler_get_created_time(directory):
 
     item = handler.get_item('test.txt')
     ctime = handler.get_created_time('test.txt')
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_get_modified_time(directory):
@@ -137,7 +141,9 @@ def test_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item('test.txt')
     mtime = handler.get_modified_time('test.txt')
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_delete(directory):
@@ -221,7 +227,9 @@ async def test_async_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item('test.txt')
     atime = await handler.async_get_accessed_time('test.txt')
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -232,7 +240,9 @@ async def test_async_local_file_handler_get_created_time(directory):
 
     item = handler.get_item('test.txt')
     ctime = await handler.async_get_created_time('test.txt')
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -243,7 +253,9 @@ async def test_async_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item('test.txt')
     mtime = await handler.async_get_modified_time('test.txt')
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -292,7 +304,9 @@ async def test_async_to_sync_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item('test.txt')
     atime = handler.get_accessed_time('test.txt')
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -303,7 +317,9 @@ async def test_async_to_sync_local_file_handler_get_created_time(directory):
 
     item = handler.get_item('test.txt')
     ctime = handler.get_created_time('test.txt')
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -314,7 +330,9 @@ async def test_async_to_sync_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item('test.txt')
     mtime = handler.get_modified_time('test.txt')
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
