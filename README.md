@@ -278,35 +278,27 @@ Once the handler is set, the store object can be used as a `StorageHandler` obje
 
 All handlers inherit from `StorageHandlerBase`.
 
-The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase`
-by itself can only be used for synchronous operations and any `async_*` method calls will throw an error. To make a new
-custom handler, start with the [handler template](../master/filestorage/handlers/_template.py).
+The async version of the Handler can be used for either synchronous or asynchronous operations. The `StorageHandlerBase` by itself can only be used for synchronous operations and any `async_*` method calls will throw an error. To make a new custom handler, start with the [handler template](../master/filestorage/handlers/_template.py).
 
 > :warning: __Ensure your forms include the attribute enctype=”multipart/form-data”__ or your uploaded files will be empty. [Short example](https://html.com/attributes/form-enctype/) and [more detail](https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects#sending_files_using_a_formdata_object).
 
 Parameters:
 
-* `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not
-  set, the `get_url` method will only return the path string, not the full URL.
-* `path` - Optional list or string - The path within the store (and URL) for any saved file. For
-  example: `['folder', 'subfolder']`
-* `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler.
-  For example: `[RandomizeFilename()]`
+* `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not set, the `get_url` method will only return the path string, not the full URL.
+* `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
+* `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
 
 > :warning: All time related methods return the specified time in the timezone of the handler.
 
 Methods:
 
-* `get_url(filename: str)` - Return the full URL of the given filename. If the `base_url` parameter isn't set, will only
-  return the path string instead of the full URL.
+* `get_url(filename: str)` - Return the full URL of the given filename. If the `base_url` parameter isn't set, will only return the path string instead of the full URL.
 * `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
 * Synchronous methods:
     * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
     * `size(filename: str)` - `int` The size in bytes of the given file.
     * `get_accessed_time(filename: str)` - `datetime` The time of last access for the given file.
-    * `get_created_time(filename: str)` - `datetime` The time of creation for the given file. This returns different
-      times based on operating system.
-      Click [here](https://docs.python.org/3/library/os.path.html?highlight=getctime#os.path.getctime) for more detail.
+    * `get_created_time(filename: str)` - `datetime` The time of creation for the given file. This returns different times based on operating system. Click [here](https://docs.python.org/3/library/os.path.html?highlight=getctime#os.path.getctime) for more detail.
     * `get_modified_time(filename: str)` - `datetime` The time of last modification for the given file.
     * `delete(filename: str)` - Deletes the given file from the store.
     * `save_file(filename: str, data: BinaryIO)` - Save the binary IO object to the given file.
@@ -325,8 +317,7 @@ Methods:
 
 Abstract Methods to be overridden when sub-classing:
 
-* `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future`
-  object.
+* `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
 * Synchronous methods: (All get passed a [FileItem](#fileitem) object)
     * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
     * `_size(filename: str)` - Returns the size in bytes of the given file.
@@ -488,16 +479,11 @@ Properties:
 Methods:
 
 * `assert_exists(filename: str, path: Tuple[str, ...]` - Asserts that the provided filename and path have been saved.
-* `assert_size(self, filename: str, path: Tuple[str, ...], size: int)` - Assert that given file size is equal to the
-  anticipated size.
-* `assert_get_accessed_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file access
-  time is equal to the anticipated time.
-* `assert_get_created_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file
-  creation time is equal to the anticipated time.
-* `assert_get_modified_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file
-  modification time is equal to the anticipated time.
-* `assert_file_contains(filename: str, path: Tuple[str, ...], data: bytes)` - Asserts that the saved file contains the
-  given data.
+* `assert_size(self, filename: str, path: Tuple[str, ...], size: int)` - Assert that given file size is equal to the anticipated size.
+* `assert_get_accessed_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file access time is equal to the anticipated time.
+* `assert_get_created_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file creation time is equal to the anticipated time.
+* `assert_get_modified_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file modification time is equal to the anticipated time.
+* `assert_file_contains(filename: str, path: Tuple[str, ...], data: bytes)` - Asserts that the saved file contains the given data.
 
 #### AsyncDummyHandler
 
