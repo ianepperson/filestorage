@@ -223,13 +223,23 @@ class S3Handler(AsyncStorageHandlerBase):
 
         return int(head['ContentLength'])
 
-    async def _async_get_accessed_time(self, item: FileItem, s3=None) -> datetime:
-        raise NotImplementedError('get_accessed_time is not supported with the S3 handler')
+    async def _async_get_accessed_time(
+            self, item: FileItem, s3=None
+    ) -> datetime:
+        raise NotImplementedError(
+            'get_accessed_time is not supported with the S3 handler'
+        )
 
-    async def _async_get_created_time(self, item: FileItem, s3=None) -> datetime:
-        raise NotImplementedError('get_created_time is not supported with the S3 handler')
+    async def _async_get_created_time(
+            self, item: FileItem, s3=None
+    ) -> datetime:
+        raise NotImplementedError(
+            'get_created_time is not supported with the S3 handler'
+        )
 
-    async def _async_get_modified_time(self, item: FileItem, s3=None) -> datetime:
+    async def _async_get_modified_time(
+            self, item: FileItem, s3=None
+    ) -> datetime:
         if s3 is None:
             # If not called with the s3 context, do it again.
             async with self.resource as s3:
