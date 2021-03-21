@@ -109,6 +109,34 @@ def test_get_url():
     assert handler.get_url('file.txt') == 'http://eppx.com/file.txt'
 
 
+def test_size(handler):
+    handler.save_data(data=b'contents', filename='file.txt')
+
+    item_size = handler.last_save_contents
+    assert len(item_size) == handler.size('file.txt')
+
+
+def test_get_accessed_time(handler):
+    handler.save_data(data=b'contents', filename='file.txt')
+
+    atime = handler.files['file.txt']['atime']
+    assert atime == handler.get_accessed_time('file.txt')
+
+
+def test_get_created_time(handler):
+    handler.save_data(data=b'contents', filename='file.txt')
+
+    ctime = handler.files['file.txt']['ctime']
+    assert ctime == handler.get_created_time('file.txt')
+
+
+def test_get_modified_time(handler):
+    handler.save_data(data=b'contents', filename='file.txt')
+
+    mtime = handler.files['file.txt']['mtime']
+    assert mtime == handler.get_modified_time('file.txt')
+
+
 def test_save_file(handler):
     handler.save_data(data=b'contents', filename='file.txt')
 

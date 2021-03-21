@@ -1,4 +1,7 @@
+from datetime import datetime
+
 import botocore  # type: ignore
+
 
 # Mock the AWS async resources that we'll be using
 # AsyncMock is available in Python 3.8, but to keep things working with older
@@ -66,6 +69,8 @@ class MockS3AsyncClient:
                     'Error': {'Code': '404'},
                 },
             )
+        # Perhaps there is a better way to mock this
+        return {'ContentLength': '8', 'LastModified': datetime(2015, 1, 1)}
 
 
 class MockAsyncContext:

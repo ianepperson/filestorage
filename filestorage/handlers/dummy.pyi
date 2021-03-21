@@ -1,3 +1,4 @@
+from datetime import datetime
 from filestorage import (
     AsyncStorageHandlerBase as AsyncStorageHandlerBase,
     FileItem as FileItem,
@@ -11,17 +12,56 @@ class DummyHandler(StorageHandlerBase):
     last_save_contents: bytes = ...
     last_delete: Any = ...
     validated: bool = ...
+
     def __init__(self, **kwargs: Any) -> None: ...
+
     def get_file_key(self, item: FileItem) -> FileItem: ...
+
     def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None: ...
+
+    def assert_size(
+            self, filename: str, path: Tuple[str, ...], size: int
+    ) -> None: ...
+
+    def assert_get_accessed_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
+    def assert_get_created_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
+    def assert_get_modified_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
     def assert_file_contains(
-        self, filename: str, path: Tuple[str, ...], data: bytes
+            self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None: ...
 
 class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
     allow_async: bool = ...
+
     def get_file_key(self, item: FileItem) -> FileItem: ...
+
     def assert_exists(self, filename: str, path: Tuple[str, ...]) -> None: ...
+
+    def assert_size(
+            self, filename: str, path: Tuple[str, ...], size: int
+    ) -> None: ...
+
+    def assert_get_accessed_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
+    def assert_get_created_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
+    def assert_get_modified_time(
+            self, filename: str, path: Tuple[str, ...], date: datetime
+    ) -> None: ...
+
     def assert_file_contains(
-        self, filename: str, path: Tuple[str, ...], data: bytes
+            self, filename: str, path: Tuple[str, ...], data: bytes
     ) -> None: ...

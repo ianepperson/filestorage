@@ -1,6 +1,7 @@
 import inspect
 from abc import ABC, abstractmethod
 from asyncio import gather, isfuture, iscoroutine
+from datetime import datetime
 from io import BytesIO
 from typing import (
     Awaitable,
@@ -28,10 +29,10 @@ class StorageHandlerBase(ABC):
     """Base class for all storage handlers."""
 
     def __init__(
-        self,
-        base_url: Optional[str] = None,
-        filters: Optional[List[FilterBase]] = None,
-        path: Union[Tuple[str, ...], List[str], str, None] = None,
+            self,
+            base_url: Optional[str] = None,
+            filters: Optional[List[FilterBase]] = None,
+            path: Union[Tuple[str, ...], List[str], str, None] = None,
     ):
         self.handler_name: Optional[str] = None
         self._base_url = base_url
@@ -94,10 +95,10 @@ class StorageHandlerBase(ABC):
         pass
 
     def get_item(
-        self,
-        filename: str,
-        subpath: Optional[Tuple[str, ...]] = None,
-        data: Optional[BinaryIO] = None,
+            self,
+            filename: str,
+            subpath: Optional[Tuple[str, ...]] = None,
+            data: Optional[BinaryIO] = None,
     ) -> FileItem:
         path = self._path
         if subpath is not None:
@@ -136,6 +137,62 @@ class StorageHandlerBase(ABC):
     def _exists(self, item: FileItem) -> bool:
         """Determine if the given path/filename exists in the storage
         container.
+        """
+        pass
+
+    def size(self, filename: str) -> int:
+        """Retrieve file size for file in storage container given filename.
+        Returns the size, in bytes of the file.
+        """
+        item = self.get_item(filename)
+        return self._size(item)
+
+    @abstractmethod
+    def _size(self, item: FileItem) -> int:
+        """Retrieve file size for file in storage container given filename.
+        Returns the size, in bytes of the file.
+        """
+        pass
+
+    def get_accessed_time(self, filename: str) -> datetime:
+        """Retrieve time of last access for file in storage container given filename.
+        Returns the time of last access, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return self._get_accessed_time(item)
+
+    @abstractmethod
+    def _get_accessed_time(self, item: FileItem) -> datetime:
+        """Retrieve time of last access for file in storage container given filename.
+        Returns the time of last access, in number of seconds since the epoch.
+        """
+        pass
+
+    def get_created_time(self, filename: str) -> datetime:
+        """Retrieve creation time for file in storage container given filename.
+        Returns the creation time, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return self._get_created_time(item)
+
+    @abstractmethod
+    def _get_created_time(self, item: FileItem) -> datetime:
+        """Retrieve creation time for file in storage container given filename.
+        Returns the creation time, in number of seconds since the epoch.
+        """
+        pass
+
+    def get_modified_time(self, filename: str) -> datetime:
+        """Retrieve time of last modification for file in storage container given filename.
+        Returns the time of last modification, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return self._get_modified_time(item)
+
+    @abstractmethod
+    def _get_modified_time(self, item: FileItem) -> datetime:
+        """Retrieve time of last modification for file in storage container given filename.
+        Returns the time of last modification, in number of seconds since the epoch.
         """
         pass
 
@@ -224,6 +281,82 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
     @abstractmethod
     async def _async_exists(self, item: FileItem) -> bool:
         """Determine if the given filename exists in the storage container."""
+        pass
+
+    async def async_size(self, filename: str) -> int:
+        """Retrieve file size for file in storage container given filename.
+        Returns the size, in bytes of the file.
+        """
+        item = self.get_item(filename)
+        return await self._async_size(item)
+
+    def _size(self, item: FileItem) -> int:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync exists method not allowed')
+        return utils.async_to_sync(self._async_size)(item)
+
+    @abstractmethod
+    async def _async_size(self, item: FileItem) -> int:
+        """Retrieve file size for file in storage container given filename.
+        Returns the size, in bytes of the file.
+        """
+        pass
+
+    async def async_get_accessed_time(self, filename: str) -> datetime:
+        """Retrieve time of last access for file in storage container given filename.
+        Returns the time of last access, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return await self._async_get_accessed_time(item)
+
+    def _get_accessed_time(self, item: FileItem) -> datetime:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync exists method not allowed')
+        return utils.async_to_sync(self._async_get_accessed_time)(item)
+
+    @abstractmethod
+    async def _async_get_accessed_time(self, item: FileItem) -> datetime:
+        """Retrieve time of last access for file in storage container given filename.
+        Returns the time of last access, in number of seconds since the epoch.
+        """
+        pass
+
+    async def async_get_created_time(self, filename: str) -> datetime:
+        """Retrieve creation time for file in storage container given filename.
+        Returns the creation time, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return await self._async_get_created_time(item)
+
+    def _get_created_time(self, item: FileItem) -> datetime:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync exists method not allowed')
+        return utils.async_to_sync(self._async_get_created_time)(item)
+
+    @abstractmethod
+    async def _async_get_created_time(self, item: FileItem) -> datetime:
+        """Retrieve creation time for file in storage container given filename.
+        Returns the creation time, in number of seconds since the epoch.
+        """
+        pass
+
+    async def async_get_modified_time(self, filename: str) -> datetime:
+        """Retrieve time of last modification for file in storage container given filename.
+        Returns the time of last modification, in number of seconds since the epoch.
+        """
+        item = self.get_item(filename)
+        return await self._async_get_modified_time(item)
+
+    def _get_modified_time(self, item: FileItem) -> datetime:
+        if not self.allow_sync_methods:
+            raise RuntimeError('Sync exists method not allowed')
+        return utils.async_to_sync(self._async_get_modified_time)(item)
+
+    @abstractmethod
+    async def _async_get_modified_time(self, item: FileItem) -> datetime:
+        """Retrieve time of last modification for file in storage container given filename.
+        Returns the time of last modification, in number of seconds since the epoch.
+        """
         pass
 
     async def async_delete(self, filename: str) -> None:
@@ -317,9 +450,9 @@ class Folder(AsyncStorageHandlerBase):
 
     def __eq__(self, other) -> bool:
         return (
-            isinstance(other, Folder)
-            and (self._store is other._store)
-            and (self._path == other._path)
+                isinstance(other, Folder)
+                and (self._store is other._store)
+                and (self._path == other._path)
         )
 
     def __truediv__(self, other: str) -> 'Folder':
@@ -345,6 +478,54 @@ class Folder(AsyncStorageHandlerBase):
         """Return the handler's _async_exists method from this folder"""
         item = self._get_subfolder_file_item(item)
         return await self._store.async_handler._async_exists(item)
+
+    # Pass through any size methods
+
+    def _size(self, item: FileItem) -> int:
+        """Return the handler's _size from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._size(item)
+
+    async def _async_size(self, item: FileItem) -> int:
+        """Return the handler's _async_size from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_size(item)
+
+    # Pass through any get_accessed_time methods
+
+    def _get_accessed_time(self, item: FileItem) -> datetime:
+        """Return the handler's _get_accessed_time from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._get_accessed_time(item)
+
+    async def _async_get_accessed_time(self, item: FileItem) -> datetime:
+        """Return the handler's _async_get_accessed_time from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_get_accessed_time(item)
+
+    # Pass through any get_created_time methods
+
+    def _get_created_time(self, item: FileItem) -> datetime:
+        """Return the handler's _size from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._get_created_time(item)
+
+    async def _async_get_created_time(self, item: FileItem) -> datetime:
+        """Return the handler's _async_size from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_get_created_time(item)
+
+    # Pass through any get_modified_time methods
+
+    def _get_modified_time(self, item: FileItem) -> datetime:
+        """Return the handler's _get_modified_time from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return self._store.sync_handler._get_modified_time(item)
+
+    async def _async_get_modified_time(self, item: FileItem) -> datetime:
+        """Return the handler's _async_get_modified_time from this folder"""
+        item = self._get_subfolder_file_item(item)
+        return await self._store.async_handler._async_get_modified_time(item)
 
     # Pass through any delete methods
 
