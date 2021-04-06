@@ -64,7 +64,7 @@ class LocalFileHandler(StorageHandlerBase):
     def _exists(self, item: FileItem) -> bool:
         return os.path.exists(self.local_path(item))
 
-    def _size(self, item: FileItem) -> int:
+    def _get_size(self, item: FileItem) -> int:
         file_stat = os.stat(self.local_path(item))
         return file_stat.st_size
 
@@ -169,7 +169,7 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
         else:
             return True
 
-    async def _async_size(self, item: FileItem) -> int:
+    async def _async_get_size(self, item: FileItem) -> int:
         file_stat = await aiofiles.os.stat(self.local_path(item))
         return file_stat.st_size
 
@@ -236,24 +236,24 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
             raise RuntimeError('Sync exists method not allowed')
         return super()._exists(item)
 
-    def _size(self, item: FileItem) -> int:
+    def _get_size(self, item: FileItem) -> int:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
-        return super()._size(item)
+            raise RuntimeError('Sync get_size method not allowed')
+        return super()._get_size(item)
 
     def _get_accessed_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_accessed_time method not allowed')
         return super()._get_accessed_time(item)
 
     def _get_created_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_created_time method not allowed')
         return super()._get_created_time(item)
 
     def _get_modified_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_modified_time method not allowed')
         return super()._get_modified_time(item)
 
     def _delete(self, item: FileItem) -> None:

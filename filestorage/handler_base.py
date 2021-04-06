@@ -140,15 +140,15 @@ class StorageHandlerBase(ABC):
         """
         pass
 
-    def size(self, filename: str) -> int:
+    def get_size(self, filename: str) -> int:
         """Retrieve file size for file in storage container given filename.
         Returns the size, in bytes of the file.
         """
         item = self.get_item(filename)
-        return self._size(item)
+        return self._get_size(item)
 
     @abstractmethod
-    def _size(self, item: FileItem) -> int:
+    def _get_size(self, item: FileItem) -> int:
         """Retrieve file size for file in storage container given filename.
         Returns the size, in bytes of the file.
         """
@@ -283,20 +283,20 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
         """Determine if the given filename exists in the storage container."""
         pass
 
-    async def async_size(self, filename: str) -> int:
+    async def async_get_size(self, filename: str) -> int:
         """Retrieve file size for file in storage container given filename.
         Returns the size, in bytes of the file.
         """
         item = self.get_item(filename)
-        return await self._async_size(item)
+        return await self._async_get_size(item)
 
-    def _size(self, item: FileItem) -> int:
+    def _get_size(self, item: FileItem) -> int:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
-        return utils.async_to_sync(self._async_size)(item)
+            raise RuntimeError('Sync get_size method not allowed')
+        return utils.async_to_sync(self._async_get_size)(item)
 
     @abstractmethod
-    async def _async_size(self, item: FileItem) -> int:
+    async def _async_get_size(self, item: FileItem) -> int:
         """Retrieve file size for file in storage container given filename.
         Returns the size, in bytes of the file.
         """
@@ -311,7 +311,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
 
     def _get_accessed_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_accessed_time method not allowed')
         return utils.async_to_sync(self._async_get_accessed_time)(item)
 
     @abstractmethod
@@ -330,7 +330,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
 
     def _get_created_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_created_time method not allowed')
         return utils.async_to_sync(self._async_get_created_time)(item)
 
     @abstractmethod
@@ -349,7 +349,7 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
 
     def _get_modified_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError('Sync get_modified_time method not allowed')
         return utils.async_to_sync(self._async_get_modified_time)(item)
 
     @abstractmethod
@@ -479,17 +479,17 @@ class Folder(AsyncStorageHandlerBase):
         item = self._get_subfolder_file_item(item)
         return await self._store.async_handler._async_exists(item)
 
-    # Pass through any size methods
+    # Pass through any get_size methods
 
-    def _size(self, item: FileItem) -> int:
-        """Return the handler's _size from this folder"""
+    def _get_size(self, item: FileItem) -> int:
+        """Return the handler's _get_size from this folder"""
         item = self._get_subfolder_file_item(item)
-        return self._store.sync_handler._size(item)
+        return self._store.sync_handler._get_size(item)
 
-    async def _async_size(self, item: FileItem) -> int:
-        """Return the handler's _async_size from this folder"""
+    async def _async_get_size(self, item: FileItem) -> int:
+        """Return the handler's _async_get_size from this folder"""
         item = self._get_subfolder_file_item(item)
-        return await self._store.async_handler._async_size(item)
+        return await self._store.async_handler._async_get_size(item)
 
     # Pass through any get_accessed_time methods
 
@@ -506,12 +506,12 @@ class Folder(AsyncStorageHandlerBase):
     # Pass through any get_created_time methods
 
     def _get_created_time(self, item: FileItem) -> datetime:
-        """Return the handler's _size from this folder"""
+        """Return the handler's _get_created_time from this folder"""
         item = self._get_subfolder_file_item(item)
         return self._store.sync_handler._get_created_time(item)
 
     async def _async_get_created_time(self, item: FileItem) -> datetime:
-        """Return the handler's _async_size from this folder"""
+        """Return the handler's _async_get_created_time from this folder"""
         item = self._get_subfolder_file_item(item)
         return await self._store.async_handler._async_get_created_time(item)
 

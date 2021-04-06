@@ -103,11 +103,11 @@ def test_local_file_handler_exists(directory):
     assert exists(directory, 'test.txt')
 
 
-def test_local_file_handler_size(directory):
+def test_local_file_handler_get_size(directory):
     handler = LocalFileHandler(base_path=directory)
     handler.save_data(filename='test.txt', data=b'contents')
     assert exists(directory, 'test.txt')
-    assert handler.size('test.txt') == 8
+    assert handler.get_size('test.txt') == 8
 
 
 def test_local_file_handler_get_accessed_time(directory):
@@ -212,11 +212,11 @@ async def test_async_local_file_handler_exists(directory):
 
 
 @pytest.mark.asyncio
-async def test_async_local_file_handler_size(directory):
+async def test_async_local_file_handler_get_size(directory):
     handler = AsyncLocalFileHandler(base_path=directory)
     await handler.async_save_data(filename='test.txt', data=b'contents')
     assert exists(directory, 'test.txt')
-    assert await handler.async_size('test.txt') == 8
+    assert await handler.async_get_size('test.txt') == 8
 
 
 @pytest.mark.asyncio
@@ -289,11 +289,11 @@ async def test_async_to_sync_local_file_handler_exists(directory):
 
 
 @pytest.mark.asyncio
-async def test_async_to_sync_local_file_handler_size(directory):
+async def test_async_to_sync_local_file_handler_get_size(directory):
     handler = AsyncLocalFileHandler(base_path=directory)
     handler.save_data(filename='test.txt', data=b'contents')
     assert exists(directory, 'test.txt')
-    assert handler.size('test.txt') == 8
+    assert handler.get_size('test.txt') == 8
 
 
 @pytest.mark.asyncio
@@ -410,15 +410,15 @@ def test_async_only_exists(directory):
 
 
 @pytest.mark.asyncio
-async def test_async_only_size(directory):
+async def test_async_only_get_size(directory):
     handler = AsyncLocalFileHandler(
         base_path=directory, allow_sync_methods=False
     )
 
     with pytest.raises(RuntimeError) as err:
-        handler.size(filename='test.txt')
+        handler.get_size(filename='test.txt')
 
-    assert str(err.value) == 'Sync exists method not allowed'
+    assert str(err.value) == 'Sync get_size method not allowed'
 
 
 @pytest.mark.asyncio
@@ -430,7 +430,7 @@ async def test_async_only_get_accessed_time(directory):
     with pytest.raises(RuntimeError) as err:
         handler.get_accessed_time(filename='test.txt')
 
-    assert str(err.value) == 'Sync exists method not allowed'
+    assert str(err.value) == 'Sync get_accessed_time method not allowed'
 
 
 @pytest.mark.asyncio
@@ -442,7 +442,7 @@ async def test_async_only_get_created_time(directory):
     with pytest.raises(RuntimeError) as err:
         handler.get_created_time(filename='test.txt')
 
-    assert str(err.value) == 'Sync exists method not allowed'
+    assert str(err.value) == 'Sync get_created_time method not allowed'
 
 
 @pytest.mark.asyncio
@@ -454,7 +454,7 @@ async def test_async_only_get_modified_time(directory):
     with pytest.raises(RuntimeError) as err:
         handler.get_modified_time(filename='test.txt')
 
-    assert str(err.value) == 'Sync exists method not allowed'
+    assert str(err.value) == 'Sync get_modified_time method not allowed'
 
 
 def test_async_only_delete(directory):

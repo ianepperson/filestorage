@@ -211,11 +211,11 @@ class S3Handler(AsyncStorageHandlerBase):
             raise
         return True
 
-    async def _async_size(self, item: FileItem, s3=None) -> int:
+    async def _async_get_size(self, item: FileItem, s3=None) -> int:
         if s3 is None:
             # If not called with the s3 context, do it again.
             async with self.resource as s3:
-                return await self._async_size(item, s3)
+                return await self._async_get_size(item, s3)
 
         head = await s3.meta.client.head_object(
             Bucket=self.bucket_name, Key=item.url_path
