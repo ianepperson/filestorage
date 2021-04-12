@@ -284,38 +284,56 @@ The async version of the Handler can be used for either synchronous or asynchron
 
 Parameters:
 
- * `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not set, the `get_url` method will only return the path string, not the full URL.
- * `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
- * `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
+* `base_url` - Optional string - The URL prefix for any saved file. For example: `'https://eppx.com/static/'`. If not set, the `get_url` method will only return the path string, not the full URL.
+* `path` - Optional list or string - The path within the store (and URL) for any saved file. For example: `['folder', 'subfolder']`
+* `filters` - Optional list of [Filters](#all-filters) to apply, in order, when saving any file through this handler. For example: `[RandomizeFilename()]`
+
+> :warning: All time related methods return the specified time in the timezone of the handler.
 
 Methods:
 
- * `get_url(filename: str)` - Return the full URL of the given filename. If the `base_url` parameter isn't set, will only return the path string instead of the full URL.
- * `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
- * Synchronous methods:
-   * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
-   * `delete(filename: str)` - Deletes the given file from the store.
-   * `save_file(filename: str, data: BinaryIO)` - Save the binary IO object to the given file.
-   * `save_data(filename: str, data: bytes)` - Save the binary data to the given file.
-   * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
- * Asynchronous methods: (all will throw a `FilestorageConfigError` if the handler doesn't support async operations.)
-   * `async_exists(filename: str)` - Awaitable version
-   * `async_delete(filename: str)` - Awaitable version
-   * `async_save_file(filename: str, data: BinaryIO)` - Awaitable version
-   * `async_save_data(filename: str, data: binary)` - Awaitable version
-   * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
+* `get_url(filename: str)` - Return the full URL of the given filename. If the `base_url` parameter isn't set, will only return the path string instead of the full URL.
+* `sanitize_filename(filename: str)` - Return the string stripped of dangerous characters.
+* Synchronous methods:
+    * `exists(filename: str)` - `True` if the given file exists in the store, false otherwise.
+    * `size(filename: str)` - `int` The size in bytes of the given file.
+    * `get_accessed_time(filename: str)` - `datetime` The time of last access for the given file.
+    * `get_created_time(filename: str)` - `datetime` The time of creation for the given file. This returns different times based on operating system. Click [here](https://docs.python.org/3/library/os.path.html?highlight=getctime#os.path.getctime) for more detail.
+    * `get_modified_time(filename: str)` - `datetime` The time of last modification for the given file.
+    * `delete(filename: str)` - Deletes the given file from the store.
+    * `save_file(filename: str, data: BinaryIO)` - Save the binary IO object to the given file.
+    * `save_data(filename: str, data: bytes)` - Save the binary data to the given file.
+    * `save_field(field: cgi.FieldStorage)` - Save the given field storage object.
+* Asynchronous methods: (all will throw a `FilestorageConfigError` if the handler doesn't support async operations.)
+    * `async_exists(filename: str)` - Awaitable version
+    * `async_size(filename: str)` - Awaitable version
+    * `async_get_accessed_time(filename: str)` - Awaitable version
+    * `async_get_created_time(filename: str)` - Awaitable version
+    * `async_get_modified_time(filename: str)` - Awaitable version
+    * `async_delete(filename: str)` - Awaitable version
+    * `async_save_file(filename: str, data: BinaryIO)` - Awaitable version
+    * `async_save_data(filename: str, data: binary)` - Awaitable version
+    * `async_save_field(field: cgi.FieldStorage)` - Awaitable version
 
 Abstract Methods to be overridden when sub-classing:
 
- * `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
- * Synchronous methods: (All get passed a [FileItem](#fileitem) object)
-   * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
-   * `_delete(item: FileItem)` - Remove the item from the storage container.
-   * `_save(item: FileItem)` - Save the item to the storage container and return the name of the file saved.
- * Asynchronous methods:
-   * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
-   * `async _async_delete(item: FileItem)` - async version.
-   * `async _async_save(item: FileItem)` - async version, returns the stored filename.
+* `_validate()` - Check to ensure the provided configuration is correct. Can be an async method or return a `Future` object.
+* Synchronous methods: (All get passed a [FileItem](#fileitem) object)
+    * `_exists(item: FileItem)` - Returns `True`/`False` to indicate if the item exists in the storage container.
+    * `_size(filename: str)` - Returns the size in bytes of the given file.
+    * `_get_accessed_time(filename: str)` Returns the time of last access for the given file.
+    * `_get_created_time(filename: str)` Returns the time of creation for the given file.
+    * `_get_modified_time(filename: str)` Returns the time of last modification for the given file.
+    * `_delete(item: FileItem)` - Remove the item from the storage container.
+    * `_save(item: FileItem)` - Save the item to the storage container and return the name of the file saved.
+* Asynchronous methods:
+    * `async _async_exists(item: FileItem)` - async version, returns `True` or `False`.
+    * `async_size(filename: str)` - async version.
+    * `async_get_accessed_time(filename: str)` async version, returns the time of last access for the given file.
+    * `async_get_created_time(filename: str)` async version, returns the time of creation for the given file.
+    * `async_get_modified_time(filename: str)` async version, returns the time of last modification for the given file.
+    * `async _async_delete(item: FileItem)` - async version.
+    * `async _async_save(item: FileItem)` - async version, returns the stored filename.
 
 ### Filter
 
@@ -460,8 +478,12 @@ Properties:
 
 Methods:
 
- * `assert_exists(filename: str, path: Tuple[str, ...]` - Asserts that the provided filename and path have been saved.
- * `assert_file_contains(filename: str, path: Tuple[str, ...], data: bytes)` - Asserts that the saved file contains the given data.
+* `assert_exists(filename: str, path: Tuple[str, ...]` - Asserts that the provided filename and path have been saved.
+* `assert_size(self, filename: str, path: Tuple[str, ...], size: int)` - Assert that given file size is equal to the anticipated size.
+* `assert_get_accessed_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file access time is equal to the anticipated time.
+* `assert_get_created_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file creation time is equal to the anticipated time.
+* `assert_get_modified_time(self, filename: str, path: Tuple[str, ...], date: datetime)` - Assert that given file modification time is equal to the anticipated time.
+* `assert_file_contains(filename: str, path: Tuple[str, ...], data: bytes)` - Asserts that the saved file contains the given data.
 
 #### AsyncDummyHandler
 

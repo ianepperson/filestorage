@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 from io import BytesIO
 
 from filestorage.handlers import S3Handler
@@ -62,6 +63,82 @@ def test_not_exists(mock_s3_resource_failure, handler):
 
 
 @pytest.mark.asyncio
+async def test_async_get_size(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    assert await handler._async_get_size(item) == 8
+
+
+def test_get_size(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    assert handler._get_size(item) == 8
+
+
+@pytest.mark.asyncio
+async def test_async_get_accessed_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(NotImplementedError) as err:
+        await handler._async_get_accessed_time(item)
+
+    assert (
+        str(err.value)
+        == 'get_accessed_time is not supported with the S3 handler'
+    )
+
+
+def test_get_accessed_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(NotImplementedError) as err:
+        handler._get_accessed_time(item)
+
+    assert (
+        str(err.value)
+        == 'get_accessed_time is not supported with the S3 handler'
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_get_created_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(NotImplementedError) as err:
+        await handler._async_get_created_time(item)
+
+    assert (
+        str(err.value)
+        == 'get_created_time is not supported with the S3 handler'
+    )
+
+
+def test_get_created_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(NotImplementedError) as err:
+        handler._get_created_time(item)
+
+    assert (
+        str(err.value)
+        == 'get_created_time is not supported with the S3 handler'
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_get_modified_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    assert await handler._async_get_modified_time(item) == datetime(2015, 1, 1)
+
+
+def test_get_modified_time(mock_s3_resource, handler):
+    item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    assert handler._get_modified_time(item) == datetime(2015, 1, 1)
+
+
+@pytest.mark.asyncio
 async def test_async_save(mock_s3_resource, handler):
     item = handler.get_item('foo.txt', data=BytesIO(b'contents'))
 
@@ -120,6 +197,42 @@ def test_cant_exists(async_only_handler):
         async_only_handler._exists(item)
 
     assert str(err.value) == 'Sync exists method not allowed'
+
+
+def test_cant_get_size(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._get_size(item)
+
+    assert str(err.value) == 'Sync get_size method not allowed'
+
+
+def test_cant_get_accessed_time(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._get_accessed_time(item)
+
+    assert str(err.value) == 'Sync get_accessed_time method not allowed'
+
+
+def test_cant_get_created_time(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._get_created_time(item)
+
+    assert str(err.value) == 'Sync get_created_time method not allowed'
+
+
+def test_cant_get_modified_time(async_only_handler):
+    item = async_only_handler.get_item('foo.txt', data=BytesIO(b'contents'))
+
+    with pytest.raises(RuntimeError) as err:
+        async_only_handler._get_modified_time(item)
+
+    assert str(err.value) == 'Sync get_modified_time method not allowed'
 
 
 def test_cant_delete(async_only_handler):
