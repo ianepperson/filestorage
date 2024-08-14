@@ -1,7 +1,7 @@
 # filestorage
 A Python library to make storing files simple and easy.
 
-> :warning: Although there are extensive tests within this project for Python 3.6, 3.7, 3.8 and 3.9, it is a young project and there may be bugs and security holes. Be sure and test thoroughly prior to use in a production environment.
+> :warning: Although there are extensive tests within this project for Python versions 3.8 to 3.12, it is a young project and there may be bugs and security holes. Be sure and test thoroughly prior to use in a production environment.
 
 It is primarily intended to deal with file uploads to a static files directory or an object service like
 [AWS S3](https://aws.amazon.com/s3/?nc2=h_ql_prod_st_s3) or [Linode](https://www.linode.com/products/object-storage/).
