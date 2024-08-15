@@ -11,8 +11,8 @@ from typing import (
 # asgiref doesn't yet have type info
 from asgiref import sync  # type: ignore
 
-T = TypeVar('T')
-R = TypeVar('R')
+T = TypeVar("T")
+R = TypeVar("R")
 
 AsyncCallable = Callable[[T], Awaitable[R]]
 SyncCallable = Callable[[T], R]
@@ -30,9 +30,7 @@ def async_to_sync(fn: AsyncCallable) -> SyncCallable:
     return cast(SyncCallable, sync.async_to_sync(fn))
 
 
-def any_to_async(
-    fn: MaybeAsyncCallable, thread_sensitive=True
-) -> AsyncCallable:
+def any_to_async(fn: MaybeAsyncCallable, thread_sensitive=True) -> AsyncCallable:
     if iscoroutinefunction(fn):
         return fn
     return sync_to_async(fn, thread_sensitive=thread_sensitive)

@@ -19,14 +19,14 @@ class StorageContainer(Folder):
     def __init__(
         self,
         name: Optional[str] = None,
-        parent: Optional['StorageContainer'] = None,
+        parent: Optional["StorageContainer"] = None,
     ):
         # Init the folder superclass
         super().__init__(store=self, path=tuple())
 
         self._name: Optional[str] = name
         self._parent = parent
-        self._children: Dict[str, 'StorageContainer'] = {}
+        self._children: Dict[str, "StorageContainer"] = {}
         self._handler: Optional[StorageHandlerBase] = None
         self._do_not_use = False
         self._finalized = False
@@ -34,12 +34,12 @@ class StorageContainer(Folder):
     @property
     def name(self) -> str:
         """Provide a name for this container based on its lineage"""
-        parent = ''
+        parent = ""
         if self._parent is not None:
             parent = self._parent.name
         if self._name is None:
             return parent
-        return f'{parent}[{repr(self._name)}]'
+        return f"{parent}[{repr(self._name)}]"
 
     @property
     def finalized(self) -> bool:
@@ -53,9 +53,7 @@ class StorageContainer(Folder):
     def sync_handler(self) -> StorageHandlerBase:
         handler = self.handler
         if handler is None:
-            raise FilestorageConfigError(
-                f'No handler provided for store{self.name}'
-            )
+            raise FilestorageConfigError(f"No handler provided for store{self.name}")
         return cast(StorageHandlerBase, handler)
 
     @property
@@ -63,7 +61,7 @@ class StorageContainer(Folder):
         handler = self.handler
         if not isinstance(handler, AsyncStorageHandlerBase):
             raise FilestorageConfigError(
-                f'No async handler provided for store{self.name}'
+                f"No async handler provided for store{self.name}"
             )
 
         return cast(AsyncStorageHandlerBase, handler)
@@ -75,9 +73,7 @@ class StorageContainer(Folder):
         if self._do_not_use:
             return None
         if self._handler is None:
-            raise FilestorageConfigError(
-                f'No handler provided for store{self.name}'
-            )
+            raise FilestorageConfigError(f"No handler provided for store{self.name}")
         return self._handler
 
     @handler.setter
@@ -85,7 +81,7 @@ class StorageContainer(Folder):
         """Set the handler for this store"""
         if self._finalized:
             raise FilestorageConfigError(
-                f'Setting store{self.name}.handler: store already finalized!'
+                f"Setting store{self.name}.handler: store already finalized!"
             )
         if handler is None:
             self._handler = None
@@ -94,8 +90,8 @@ class StorageContainer(Folder):
 
         if not isinstance(handler, StorageHandlerBase):
             raise FilestorageConfigError(
-                f'Setting store{self.name}.handler: '
-                f'{handler!r} is not a StorageHandler'
+                f"Setting store{self.name}.handler: "
+                f"{handler!r} is not a StorageHandler"
             )
         self._do_not_use = False
         # Inject the handler name
@@ -111,9 +107,7 @@ class StorageContainer(Folder):
             return
 
         if self._handler is None:
-            raise FilestorageConfigError(
-                f'No handler provided for store{self.name}'
-            )
+            raise FilestorageConfigError(f"No handler provided for store{self.name}")
 
         result = self._handler.validate()
         if iscoroutine(result) or isfuture(result):
@@ -128,19 +122,17 @@ class StorageContainer(Folder):
         event_loop = get_event_loop()
         if event_loop.is_running():
             raise FilestorageConfigError(
-                'Async event loop is already running. '
-                'Must await store.async_finalize_config() instead.'
+                "Async event loop is already running. "
+                "Must await store.async_finalize_config() instead."
             )
         event_loop.run_until_complete(self.async_finalize_config())
 
-    def __getitem__(self, key: str) -> 'StorageContainer':
+    def __getitem__(self, key: str) -> "StorageContainer":
         """Get or create a storage container as a lookup.
         The provided container will be lazily configured.
         """
         if self._finalized and key not in self._children:
             raise FilestorageConfigError(
-                f'Getting store{self.name}[{key!r}]: store already finalized!'
+                f"Getting store{self.name}[{key!r}]: store already finalized!"
             )
-        return self._children.setdefault(
-            key, StorageContainer(name=key, parent=self)
-        )
+        return self._children.setdefault(key, StorageContainer(name=key, parent=self))

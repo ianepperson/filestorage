@@ -25,8 +25,7 @@ class FilterBase(ABC):
         """Apply the filter asynchronously"""
         if not self.async_ok:
             raise FilestorageConfigError(
-                f'The {self.__class__.__name__} filter cannot be used '
-                'asynchronously'
+                f"The {self.__class__.__name__} filter cannot be used " "asynchronously"
             )
 
         if iscoroutinefunction(self._apply):

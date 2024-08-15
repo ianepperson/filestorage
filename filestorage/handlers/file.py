@@ -38,9 +38,9 @@ class LocalFileHandler(StorageHandlerBase):
     def make_dir(self, item: Optional[FileItem] = None):
         """Ensures the provided path exists."""
         if not item:
-            item = self.get_item('')
+            item = self.get_item("")
         else:
-            item = item.copy(filename='')
+            item = item.copy(filename="")
 
         local_path = self.local_path(item)
         if local_path in self._created_dirs:
@@ -54,11 +54,11 @@ class LocalFileHandler(StorageHandlerBase):
         if self.auto_make_dir:
             self.make_dir()
         else:
-            item = self.get_item('')
+            item = self.get_item("")
             if not self._exists(item):
                 local_path = self.local_path(item)
                 raise FilestorageConfigError(
-                    f'Configured directory {local_path!r} does not exist'
+                    f"Configured directory {local_path!r} does not exist"
                 )
 
     def _exists(self, item: FileItem) -> bool:
@@ -88,13 +88,13 @@ class LocalFileHandler(StorageHandlerBase):
 
     def _save(self, item: FileItem) -> str:
         if item.data is None:
-            raise RuntimeError('No data for file {item.filename!r}')
+            raise RuntimeError("No data for file {item.filename!r}")
 
         if self.auto_make_dir:
             self.make_dir(item)
 
         item = self.resolve_filename(item)
-        with open(self.local_path(item), 'wb') as destination:
+        with open(self.local_path(item), "wb") as destination:
             with item as f:
                 while True:
                     chunk = f.read(self.chunk_size)
@@ -111,14 +111,12 @@ class LocalFileHandler(StorageHandlerBase):
 
         basename, ext = os.path.splitext(item.filename)
         for counter in range(1, 1000000):
-            filename = f'{basename}-{counter}{ext}'
+            filename = f"{basename}-{counter}{ext}"
             item = item.copy(filename=filename)
             if not self._exists(item):
                 return item
         else:
-            raise RuntimeError(
-                f'Cannot get unique name for file {basename}{ext}'
-            )
+            raise RuntimeError(f"Cannot get unique name for file {basename}{ext}")
 
 
 def os_wrap(fn: utils.SyncCallable) -> utils.AsyncCallable:
@@ -129,7 +127,7 @@ def os_wrap(fn: utils.SyncCallable) -> utils.AsyncCallable:
 
 
 def disabled_method(*args, **kwargs):
-    raise RuntimeError('method not allowed')
+    raise RuntimeError("method not allowed")
 
 
 class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
@@ -138,9 +136,9 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
     async def async_make_dir(self, item: Optional[FileItem] = None):
         """Ensures the provided path exists."""
         if not item:
-            item = self.get_item('')
+            item = self.get_item("")
         else:
-            item = item.copy(filename='')
+            item = item.copy(filename="")
 
         local_path = self.local_path(item)
         if local_path in self._created_dirs:
@@ -151,8 +149,8 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
     def validate(self) -> None:
         if aiofiles is None:
             raise FilestorageConfigError(
-                'The aiofiles library is required for using '
-                f'{self.__class__.__name__}'
+                "The aiofiles library is required for using "
+                f"{self.__class__.__name__}"
             )
 
         # Ensure the sync methods can operate while validating
@@ -193,13 +191,13 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
 
     async def _async_save(self, item: FileItem) -> str:
         if item.data is None:
-            raise RuntimeError('No data for file {item.filename!r}')
+            raise RuntimeError("No data for file {item.filename!r}")
 
         if self.auto_make_dir:
             await self.async_make_dir(item)
 
         item = await self.async_resolve_filename(item)
-        open_context = aiofiles.open(self.local_path(item), 'wb')
+        open_context = aiofiles.open(self.local_path(item), "wb")
         async with open_context as destination:  # type: ignore
             async with item as f:
                 while True:
@@ -217,46 +215,44 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
 
         basename, ext = os.path.splitext(item.filename)
         for counter in range(1, 1000000):
-            filename = f'{basename}-{counter}{ext}'
+            filename = f"{basename}-{counter}{ext}"
             item = item.copy(filename=filename)
             if not await self._async_exists(item):
                 return item
         else:
-            raise RuntimeError(
-                f'Cannot get unique name for file {basename}{ext}'
-            )
+            raise RuntimeError(f"Cannot get unique name for file {basename}{ext}")
 
     def _save(self, item: FileItem) -> str:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync save method not allowed')
+            raise RuntimeError("Sync save method not allowed")
         return super()._save(item)
 
     def _exists(self, item: FileItem) -> bool:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync exists method not allowed')
+            raise RuntimeError("Sync exists method not allowed")
         return super()._exists(item)
 
     def _get_size(self, item: FileItem) -> int:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync get_size method not allowed')
+            raise RuntimeError("Sync get_size method not allowed")
         return super()._get_size(item)
 
     def _get_accessed_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync get_accessed_time method not allowed')
+            raise RuntimeError("Sync get_accessed_time method not allowed")
         return super()._get_accessed_time(item)
 
     def _get_created_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync get_created_time method not allowed')
+            raise RuntimeError("Sync get_created_time method not allowed")
         return super()._get_created_time(item)
 
     def _get_modified_time(self, item: FileItem) -> datetime:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync get_modified_time method not allowed')
+            raise RuntimeError("Sync get_modified_time method not allowed")
         return super()._get_modified_time(item)
 
     def _delete(self, item: FileItem) -> None:
         if not self.allow_sync_methods:
-            raise RuntimeError('Sync delete method not allowed')
+            raise RuntimeError("Sync delete method not allowed")
         super()._delete(item)

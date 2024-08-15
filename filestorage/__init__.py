@@ -11,27 +11,27 @@ from .filter_base import FilterBase, AsyncFilterBase
 
 def _read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
-    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+    with codecs.open(os.path.join(here, rel_path), "r") as fp:
         return fp.read()
 
 
-__version__ = _read('VERSION').strip()
+__version__ = _read("VERSION").strip()
 
 # Instantiate the store singleton
 store = StorageContainer()
 
 
 __all__ = [
-    'store',
-    'StorageContainer',
-    'StorageHandlerBase',
-    'AsyncStorageHandlerBase',
-    'FileItem',
-    'FilterBase',
-    'AsyncFilterBase',
-    'exceptions',
-    'handlers',
-    'filters',
-    'pyramid_config',
-    'config_utils',
+    "store",
+    "StorageContainer",
+    "StorageHandlerBase",
+    "AsyncStorageHandlerBase",
+    "FileItem",
+    "FilterBase",
+    "AsyncFilterBase",
+    "exceptions",
+    "handlers",
+    "filters",
+    "pyramid_config",
+    "config_utils",
 ]

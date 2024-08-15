@@ -9,9 +9,7 @@ from typing import Any, Optional
 
 class AioBotoS3ResourceContext:
     async def __aenter__(self) -> None: ...
-    async def __aexit__(
-        self, exc_type: str, exc: Exception, tb: Any
-    ) -> Any: ...
+    async def __aexit__(self, exc_type: str, exc: Exception, tb: Any) -> Any: ...
 
 TypeACL: Any
 TypeAddressingStyle: Any
