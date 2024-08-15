@@ -64,13 +64,13 @@ class MockS3AsyncClient:
         self._head_object_kwargs = kwargs
         if self._make_object_missing:
             raise botocore.exceptions.ClientError(
-                operation_name='head_object',
+                operation_name="head_object",
                 error_response={
-                    'Error': {'Code': '404'},
+                    "Error": {"Code": "404"},
                 },
             )
         # Perhaps there is a better way to mock this
-        return {'ContentLength': '8', 'LastModified': datetime(2015, 1, 1)}
+        return {"ContentLength": "8", "LastModified": datetime(2015, 1, 1)}
 
 
 class MockAsyncContext:

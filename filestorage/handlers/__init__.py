@@ -4,9 +4,9 @@ from .dummy import DummyHandler, AsyncDummyHandler
 
 
 __all__ = [
-    'LocalFileHandler',
-    'AsyncLocalFileHandler',
-    'DummyHandler',
-    'AsyncDummyHandler',
-    'S3Handler',
+    "LocalFileHandler",
+    "AsyncLocalFileHandler",
+    "DummyHandler",
+    "AsyncDummyHandler",
+    "S3Handler",
 ]

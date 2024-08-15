@@ -11,8 +11,8 @@ from typing import (
 # asgiref doesn't yet have type info
 from asgiref import sync  # type: ignore
 
-T = TypeVar('T')
-R = TypeVar('R')
+T = TypeVar("T")
+R = TypeVar("R")
 
 AsyncCallable = Callable[[T], Awaitable[R]]
 SyncCallable = Callable[[T], R]

@@ -13,17 +13,17 @@ class DummyHandler(StorageHandlerBase):
         # a named tuple containing the contents of the file, the access
         # time, the creation time, and the time of last modification.
         self._file = NamedTuple(
-            'File',
+            "File",
             [
-                ('contents', bytes),
-                ('atime', datetime),
-                ('ctime', datetime),
-                ('mtime', datetime),
+                ("contents", bytes),
+                ("atime", datetime),
+                ("ctime", datetime),
+                ("mtime", datetime),
             ],
         )
         self.files: Dict[str, NamedTuple] = {}
         self.last_save: Optional[FileItem] = None
-        self.last_save_contents: bytes = b''
+        self.last_save_contents: bytes = b""
         self.last_delete: Optional[FileItem] = None
         self.validated = False
 

@@ -25,7 +25,7 @@ class NewStorageHandler(StorageHandlerBase):
         # If the problem is with the configuration:
         #     raise FilestorageConfigError('describe the problem')
         # Can be an async method if necessary and will be awaited on properly.
-        raise FilestorageConfigError('This is a template, not a real handler!')
+        raise FilestorageConfigError("This is a template, not a real handler!")
 
     # async def _async_exists(self, item: FileItem) -> bool:
     def _exists(self, item: FileItem) -> bool:

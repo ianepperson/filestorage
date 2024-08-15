@@ -15,7 +15,7 @@ def store():
 
 @pytest.fixture
 def handler(store):
-    return DummyHandler(base_url='http://eppx.com/', path=('static',))
+    return DummyHandler(base_url="http://eppx.com/", path=("static",))
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def test_use_after_do_not_use_config(store, handler):
 
 def test_validate_async_handler(store, handler, async_handler):
     store.handler = handler
-    store['a'].handler = async_handler
+    store["a"].handler = async_handler
 
     store.finalize_config()
 
@@ -93,8 +93,8 @@ async def test_async_validate_error(store, async_handler):
 
 
 def test_child_stores_naming(store):
-    sub_a = store['a']
-    sub_b = store['a']['b']
+    sub_a = store["a"]
+    sub_b = store["a"]["b"]
 
     assert not store.name
     assert sub_a.name == "['a']"
@@ -106,28 +106,28 @@ def test_cant_get_children_after_final(store, handler):
     store.finalize_config()
 
     with pytest.raises(FilestorageConfigError) as err:
-        store['a']
+        store["a"]
 
     assert str(err.value) == "Getting store['a']: store already finalized!"
 
 
 def test_path_by_div(store, handler):
-    sub_a = store / 'a'
-    sub_b = sub_a / 'b'
+    sub_a = store / "a"
+    sub_b = sub_a / "b"
     store.handler = handler
 
-    sub_b.save_data(filename='new_file.txt', data=b'As a cucumber.')
+    sub_b.save_data(filename="new_file.txt", data=b"As a cucumber.")
 
     item = store.handler.last_save
     with item as f:
-        assert f.read() == b'As a cucumber.'
-    assert item.url_path == 'static/a/b/new_file.txt'
+        assert f.read() == b"As a cucumber."
+    assert item.url_path == "static/a/b/new_file.txt"
 
 
 def test_bad_handler_setting(store):
     with pytest.raises(FilestorageConfigError) as err:
         # Handler must be a handler!
-        store.handler = 'foo'
+        store.handler = "foo"
 
     assert (
         str(err.value)
@@ -139,12 +139,12 @@ def test_finalized_without_setting(store):
     with pytest.raises(FilestorageConfigError) as err:
         store.finalize_config()
 
-    assert str(err.value) == 'No handler provided for store'
+    assert str(err.value) == "No handler provided for store"
 
 
 def test_finalized_without_setting_substore(store, handler):
     store.handler = handler
-    store_b = store['b']  # noqa
+    store_b = store["b"]  # noqa
 
     with pytest.raises(FilestorageConfigError) as err:
         store.finalize_config()
@@ -157,9 +157,9 @@ def test_finalized_finalizes_all_substores(store, handler):
     handler_a = DummyHandler()
     handler_b = DummyHandler()
     handler_ac = DummyHandler()
-    store['a'].handler = handler_a
-    store['b'].handler = handler_b
-    store['a']['c'].handler = handler_ac
+    store["a"].handler = handler_a
+    store["b"].handler = handler_b
+    store["a"]["c"].handler = handler_ac
 
     store.finalize_config()
 

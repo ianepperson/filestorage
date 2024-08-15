@@ -6,7 +6,7 @@ from . import utils
 
 
 class SyncReader:
-    def __init__(self, item: 'FileItem'):
+    def __init__(self, item: "FileItem"):
         self.data = item.data
         self.filename = item.filename
         if self.data is not None:
@@ -20,14 +20,14 @@ class SyncReader:
 
     def read(self, size: int = -1) -> bytes:
         if self.data is None:
-            return b''
+            return b""
         return self._reader(size)
 
     closed = False
 
 
 class AsyncReader:
-    def __init__(self, item: 'FileItem'):
+    def __init__(self, item: "FileItem"):
         self.data = item.data
         self.filename = item.filename
         if self.data is not None:
@@ -41,7 +41,7 @@ class AsyncReader:
 
     async def read(self, size: int = -1) -> bytes:
         if self.data is None:
-            return b''
+            return b""
         return await self._reader(size)
 
     closed = False
@@ -53,21 +53,21 @@ class FileItem(NamedTuple):
     data: Optional[BinaryIO] = None
     media_type: Optional[str] = None  # Formerly known as MIME-type
 
-    def copy(self, **kwargs) -> 'FileItem':
-        filename = kwargs.get('filename', self.filename)
-        path = kwargs.get('path', self.path)
-        data = kwargs.get('data', self.data)
-        media_type = kwargs.get('media_type', self.media_type)
+    def copy(self, **kwargs) -> "FileItem":
+        filename = kwargs.get("filename", self.filename)
+        path = kwargs.get("path", self.path)
+        data = kwargs.get("data", self.data)
+        media_type = kwargs.get("media_type", self.media_type)
 
         return FileItem(
             filename=filename, path=path, data=data, media_type=media_type
         )
 
     def __repr__(self) -> str:
-        has_data = 'no data' if self.data is None else 'with data'
+        has_data = "no data" if self.data is None else "with data"
         return (
-            f'<FileItem filename:{self.filename!r} '
-            f'path:{self.path!r} {has_data}>'
+            f"<FileItem filename:{self.filename!r} "
+            f"path:{self.path!r} {has_data}>"
         )
 
     @property
@@ -77,7 +77,7 @@ class FileItem(NamedTuple):
     @property
     def url_path(self) -> str:
         """A relative URL path string for this path/filename"""
-        return '/'.join(self.path + (self.filename,))
+        return "/".join(self.path + (self.filename,))
 
     @property
     def fs_path(self) -> str:

@@ -22,14 +22,14 @@ def handler():
 
 def test_different_paths():
     handlers = [
-        DummyHandler(path=('foo',)),
-        DummyHandler(path=('foo')),
-        DummyHandler(path=['foo']),
-        DummyHandler(path='foo'),
+        DummyHandler(path=("foo",)),
+        DummyHandler(path=("foo")),
+        DummyHandler(path=["foo"]),
+        DummyHandler(path="foo"),
     ]
 
     for handler in handlers:
-        assert handler.path == ('foo',)
+        assert handler.path == ("foo",)
 
 
 def test_validate():
@@ -75,28 +75,28 @@ async def test_validate_bad_async_filter():
     with pytest.raises(FilestorageConfigError) as err:
         await handler.validate()
 
-    assert 'cannot be used' in str(err.value)
+    assert "cannot be used" in str(err.value)
 
 
 def test_get_item():
-    handler = DummyHandler(path=['foo'])
-    item = handler.get_item('file.txt')
+    handler = DummyHandler(path=["foo"])
+    item = handler.get_item("file.txt")
 
     assert isinstance(item, FileItem)
-    assert item == FileItem(filename='file.txt', path=('foo',))
+    assert item == FileItem(filename="file.txt", path=("foo",))
 
 
 @pytest.mark.parametrize(
-    ('dirty', 'clean'),
+    ("dirty", "clean"),
     [
-        ['..foo', 'foo'],
-        ['foo..', 'foo..'],
-        ['../foo', '_foo'],
-        ['/.foo', '_.foo'],
-        ['a b c', 'a_b_c'],
-        ['a/b/c', 'a_b_c'],
-        ['1/2/3', '1_2_3'],
-        ['☺', '_'],
+        ["..foo", "foo"],
+        ["foo..", "foo.."],
+        ["../foo", "_foo"],
+        ["/.foo", "_.foo"],
+        ["a b c", "a_b_c"],
+        ["a/b/c", "a_b_c"],
+        ["1/2/3", "1_2_3"],
+        ["☺", "_"],
     ],
 )
 def test_sanitize_filename(handler, dirty, clean):
@@ -104,116 +104,116 @@ def test_sanitize_filename(handler, dirty, clean):
 
 
 def test_get_url():
-    handler = AsyncDummyHandler(base_url='http://eppx.com')
+    handler = AsyncDummyHandler(base_url="http://eppx.com")
 
-    assert handler.get_url('file.txt') == 'http://eppx.com/file.txt'
+    assert handler.get_url("file.txt") == "http://eppx.com/file.txt"
 
 
 def test_get_size(handler):
-    handler.save_data(data=b'contents', filename='file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
 
     item_size = handler.last_save_contents
-    assert len(item_size) == handler.get_size('file.txt')
+    assert len(item_size) == handler.get_size("file.txt")
 
 
 def test_get_accessed_time(handler):
-    handler.save_data(data=b'contents', filename='file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
 
-    atime = handler.files['file.txt'].atime
-    assert atime == handler.get_accessed_time('file.txt')
+    atime = handler.files["file.txt"].atime
+    assert atime == handler.get_accessed_time("file.txt")
 
 
 def test_get_created_time(handler):
-    handler.save_data(data=b'contents', filename='file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
 
-    ctime = handler.files['file.txt'].ctime
-    assert ctime == handler.get_created_time('file.txt')
+    ctime = handler.files["file.txt"].ctime
+    assert ctime == handler.get_created_time("file.txt")
 
 
 def test_get_modified_time(handler):
-    handler.save_data(data=b'contents', filename='file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
 
-    mtime = handler.files['file.txt'].mtime
-    assert mtime == handler.get_modified_time('file.txt')
+    mtime = handler.files["file.txt"].mtime
+    assert mtime == handler.get_modified_time("file.txt")
 
 
 def test_save_file(handler):
-    handler.save_data(data=b'contents', filename='file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
 
     item = handler.last_save
-    assert item.filename == 'file.txt'
+    assert item.filename == "file.txt"
     with item as f:
-        assert f.read() == b'contents'
+        assert f.read() == b"contents"
 
 
 @pytest.mark.asyncio
 async def test_async_save_file():
     handler = AsyncDummyHandler()
-    await handler.async_save_data(data=b'contents', filename='file.txt')
+    await handler.async_save_data(data=b"contents", filename="file.txt")
 
     item = handler.last_save
-    assert item.filename == 'file.txt'
+    assert item.filename == "file.txt"
     with item as f:
-        assert f.read() == b'contents'
+        assert f.read() == b"contents"
 
 
 def test_save_field(handler):
-    headers = {'content-disposition': 'attachment; filename=file.txt'}
+    headers = {"content-disposition": "attachment; filename=file.txt"}
     field = cgi.FieldStorage(headers=headers)
-    field.file = BytesIO(b'contents')
+    field.file = BytesIO(b"contents")
     handler.save_field(field)
 
     item = handler.last_save
-    assert item.filename == 'file.txt'
+    assert item.filename == "file.txt"
     with item as f:
-        assert f.read() == b'contents'
+        assert f.read() == b"contents"
 
 
 def test_delete_file(handler):
-    assert not handler.exists('file.txt')
+    assert not handler.exists("file.txt")
 
-    handler.save_data(data=b'contents', filename='file.txt')
-    assert handler.exists('file.txt')
+    handler.save_data(data=b"contents", filename="file.txt")
+    assert handler.exists("file.txt")
 
-    handler.delete('file.txt')
-    assert not handler.exists('file.txt')
+    handler.delete("file.txt")
+    assert not handler.exists("file.txt")
 
 
 @pytest.mark.asyncio
 async def test_async_delete_file():
     handler = AsyncDummyHandler()
-    assert not await handler.async_exists('file.txt')
+    assert not await handler.async_exists("file.txt")
 
-    await handler.async_save_data(data=b'contents', filename='file.txt')
-    assert await handler.async_exists('file.txt')
+    await handler.async_save_data(data=b"contents", filename="file.txt")
+    assert await handler.async_exists("file.txt")
 
-    await handler.async_delete('file.txt')
-    assert not await handler.async_exists('file.txt')
+    await handler.async_delete("file.txt")
+    assert not await handler.async_exists("file.txt")
 
 
 def test_subfolder_save(store, handler):
     store.handler = handler
-    subfolder = store / 'a' / 'b'
+    subfolder = store / "a" / "b"
 
-    subfolder.save_data(data=b'contents', filename='file.txt')
+    subfolder.save_data(data=b"contents", filename="file.txt")
 
     item = handler.last_save
-    assert item.filename == 'file.txt'
-    assert item.path == ('a', 'b')
+    assert item.filename == "file.txt"
+    assert item.path == ("a", "b")
     with item as f:
-        assert f.read() == b'contents'
+        assert f.read() == b"contents"
 
 
 def test_subfolder_delete_file(store, handler):
     store.handler = handler
-    subfolder = store / 'a' / 'b'
-    assert not subfolder.exists('file.txt')
+    subfolder = store / "a" / "b"
+    assert not subfolder.exists("file.txt")
 
-    subfolder.save_data(data=b'contents', filename='file.txt')
-    assert subfolder.exists('file.txt')
+    subfolder.save_data(data=b"contents", filename="file.txt")
+    assert subfolder.exists("file.txt")
 
-    subfolder.delete('file.txt')
-    assert not subfolder.exists('file.txt')
+    subfolder.delete("file.txt")
+    assert not subfolder.exists("file.txt")
 
 
 class MockFilter(FilterBase):
@@ -228,14 +228,14 @@ class MockFilter(FilterBase):
 
 
 def test_calls_filter(store):
-    filter1 = MockFilter('-1')
-    filter2 = MockFilter('-2')
+    filter1 = MockFilter("-1")
+    filter2 = MockFilter("-2")
     store.handler = DummyHandler(filters=[filter1, filter2])
-    result = store.save_data(data=b'contents', filename='file.txt')
+    result = store.save_data(data=b"contents", filename="file.txt")
 
     filter1.mock._apply.assert_called()
     filter2.mock._apply.assert_called()
-    assert result == 'file.txt-1-2'
+    assert result == "file.txt-1-2"
 
 
 def test_filter_class_not_instance():
@@ -248,14 +248,14 @@ def test_filter_class_not_instance():
         handler.validate()
 
     assert str(err.value) == (
-        'Filter MockFilter is a class, not an instance. '
+        "Filter MockFilter is a class, not an instance. "
         'Did you mean to use "filters=[MockFilter()]" instead?'
     )
 
 
 def test_subfolder_get_url(store):
-    store.handler = DummyHandler(base_url='http://foo.bar')
-    subfolder = store / 'folder'
+    store.handler = DummyHandler(base_url="http://foo.bar")
+    subfolder = store / "folder"
 
-    assert subfolder.base_url == 'http://foo.bar'
-    assert subfolder.get_url('test.txt') == 'http://foo.bar/folder/test.txt'
+    assert subfolder.base_url == "http://foo.bar"
+    assert subfolder.get_url("test.txt") == "http://foo.bar/folder/test.txt"

@@ -10,12 +10,12 @@ from filestorage.filters import ValidateExtension
 @pytest.fixture
 def item():
     return FileItem(
-        filename='file.txt', path=('folder',), data=BytesIO(b'content')
+        filename="file.txt", path=("folder",), data=BytesIO(b"content")
     )
 
 
 def test_valid_extension(item):
-    filter = ValidateExtension(extensions=['txt', 'html'])
+    filter = ValidateExtension(extensions=["txt", "html"])
 
     result = filter._apply(item)
 
@@ -24,7 +24,7 @@ def test_valid_extension(item):
 
 
 def test_invalid_extension(item):
-    filter = ValidateExtension(extensions=['png', 'jpg'])
+    filter = ValidateExtension(extensions=["png", "jpg"])
 
     with pytest.raises(FileExtensionNotAllowed):
         filter._apply(item)
