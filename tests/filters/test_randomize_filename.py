@@ -8,7 +8,9 @@ from filestorage.filters import RandomizeFilename
 
 @pytest.fixture
 def item():
-    return FileItem(filename="file.txt", path=("folder",), data=BytesIO(b"content"))
+    return FileItem(
+        filename="file.txt", path=("folder",), data=BytesIO(b"content")
+    )
 
 
 def with_spam(old_name):

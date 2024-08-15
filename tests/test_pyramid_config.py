@@ -20,7 +20,9 @@ class MockPyramidConfig:
     def get_settings(self):
         return self._settings
 
-    def add_request_method(self, callable=None, name=None, property=False, reify=False):
+    def add_request_method(
+        self, callable=None, name=None, property=False, reify=False
+    ):
         self._request_methods[name] = callable
 
     def get_request_prop(self, name):

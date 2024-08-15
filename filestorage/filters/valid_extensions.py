@@ -13,7 +13,9 @@ class ValidateExtension(FilterBase):
     async_ok = True
 
     def __init__(self, extensions: List[str]):
-        self.extensions = set(ext.lower().strip(os.path.extsep) for ext in extensions)
+        self.extensions = set(
+            ext.lower().strip(os.path.extsep) for ext in extensions
+        )
 
     def extension_allowed(self, ext: str) -> bool:
         """Determine if the provided file extension is allowed."""

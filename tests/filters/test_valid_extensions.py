@@ -9,7 +9,9 @@ from filestorage.filters import ValidateExtension
 
 @pytest.fixture
 def item():
-    return FileItem(filename="file.txt", path=("folder",), data=BytesIO(b"content"))
+    return FileItem(
+        filename="file.txt", path=("folder",), data=BytesIO(b"content")
+    )
 
 
 def test_valid_extension(item):

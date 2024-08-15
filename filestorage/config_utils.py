@@ -142,7 +142,9 @@ def get_handler(key_prefix: str, settings_dict: Dict) -> StorageHandlerBase:
     try:
         return handler_cls(**kwargs)
     except Exception as err:
-        raise FilestorageConfigError(f"Pyramid settings bad args for {name}: {err}")
+        raise FilestorageConfigError(
+            f"Pyramid settings bad args for {name}: {err}"
+        )
 
 
 def get_all_filters(key_prefix: str, settings_dict: Dict) -> List[FilterBase]:
@@ -168,7 +170,9 @@ def get_filter(key_prefix: str, settings_dict: Dict) -> FilterBase:
     try:
         filter_cls = try_import("filestorage.filters", filter_name)
     except ValueError:
-        raise FilestorageConfigError(f"Pyramid settings bad value for {key_prefix}")
+        raise FilestorageConfigError(
+            f"Pyramid settings bad value for {key_prefix}"
+        )
 
     kwargs = {key: decode_kwarg(value) for key, value in settings_dict.items()}
     try:
@@ -206,7 +210,9 @@ def decode_kwarg(value) -> Any:
         try:
             return eval(value, {}, {})
         except Exception as err:
-            raise FilestorageConfigError(f"Pyramid settings bad value {value}: {err}")
+            raise FilestorageConfigError(
+                f"Pyramid settings bad value {value}: {err}"
+            )
 
     if value.isdigit():
         return int(value)

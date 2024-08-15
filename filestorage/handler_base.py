@@ -236,7 +236,9 @@ class StorageHandlerBase(ABC):
         if not field.file:
             raise RuntimeError("No file data in the field")
 
-        return self.save_file(field.filename or "file", cast(BinaryIO, field.file))
+        return self.save_file(
+            field.filename or "file", cast(BinaryIO, field.file)
+        )
 
     def save_data(self, filename: str, data: bytes) -> str:
         """Save a file from the byte data provided."""

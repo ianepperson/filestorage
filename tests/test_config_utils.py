@@ -110,7 +110,9 @@ def test_missing_required_parameter(store):
         config_utils.setup_from_settings(settings, store)
 
     assert "store.handler.filters[0]" in str(err.value)
-    assert "missing 1 required positional argument: 'extensions'" in str(err.value)
+    assert "missing 1 required positional argument: 'extensions'" in str(
+        err.value
+    )
 
 
 def test_decode_ints_and_strings(store):

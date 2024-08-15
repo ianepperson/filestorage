@@ -59,12 +59,15 @@ class FileItem(NamedTuple):
         data = kwargs.get("data", self.data)
         media_type = kwargs.get("media_type", self.media_type)
 
-        return FileItem(filename=filename, path=path, data=data, media_type=media_type)
+        return FileItem(
+            filename=filename, path=path, data=data, media_type=media_type
+        )
 
     def __repr__(self) -> str:
         has_data = "no data" if self.data is None else "with data"
         return (
-            f"<FileItem filename:{self.filename!r} " f"path:{self.path!r} {has_data}>"
+            f"<FileItem filename:{self.filename!r} "
+            f"path:{self.path!r} {has_data}>"
         )
 
     @property

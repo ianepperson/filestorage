@@ -30,7 +30,9 @@ def async_to_sync(fn: AsyncCallable) -> SyncCallable:
     return cast(SyncCallable, sync.async_to_sync(fn))
 
 
-def any_to_async(fn: MaybeAsyncCallable, thread_sensitive=True) -> AsyncCallable:
+def any_to_async(
+    fn: MaybeAsyncCallable, thread_sensitive=True
+) -> AsyncCallable:
     if iscoroutinefunction(fn):
         return fn
     return sync_to_async(fn, thread_sensitive=thread_sensitive)

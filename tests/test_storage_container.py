@@ -129,7 +129,10 @@ def test_bad_handler_setting(store):
         # Handler must be a handler!
         store.handler = "foo"
 
-    assert str(err.value) == "Setting store.handler: 'foo' is not a StorageHandler"
+    assert (
+        str(err.value)
+        == "Setting store.handler: 'foo' is not a StorageHandler"
+    )
 
 
 def test_finalized_without_setting(store):

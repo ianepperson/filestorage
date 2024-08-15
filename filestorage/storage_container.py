@@ -53,7 +53,9 @@ class StorageContainer(Folder):
     def sync_handler(self) -> StorageHandlerBase:
         handler = self.handler
         if handler is None:
-            raise FilestorageConfigError(f"No handler provided for store{self.name}")
+            raise FilestorageConfigError(
+                f"No handler provided for store{self.name}"
+            )
         return cast(StorageHandlerBase, handler)
 
     @property
@@ -73,7 +75,9 @@ class StorageContainer(Folder):
         if self._do_not_use:
             return None
         if self._handler is None:
-            raise FilestorageConfigError(f"No handler provided for store{self.name}")
+            raise FilestorageConfigError(
+                f"No handler provided for store{self.name}"
+            )
         return self._handler
 
     @handler.setter
@@ -107,7 +111,9 @@ class StorageContainer(Folder):
             return
 
         if self._handler is None:
-            raise FilestorageConfigError(f"No handler provided for store{self.name}")
+            raise FilestorageConfigError(
+                f"No handler provided for store{self.name}"
+            )
 
         result = self._handler.validate()
         if iscoroutine(result) or isfuture(result):
@@ -135,4 +141,6 @@ class StorageContainer(Folder):
             raise FilestorageConfigError(
                 f"Getting store{self.name}[{key!r}]: store already finalized!"
             )
-        return self._children.setdefault(key, StorageContainer(name=key, parent=self))
+        return self._children.setdefault(
+            key, StorageContainer(name=key, parent=self)
+        )

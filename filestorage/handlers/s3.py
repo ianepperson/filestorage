@@ -96,7 +96,9 @@ class S3Handler(AsyncStorageHandlerBase):
         }
 
         if addressing_style:
-            self.aio_config_params["s3"] = {"addressing_style": addressing_style}
+            self.aio_config_params["s3"] = {
+                "addressing_style": addressing_style
+            }
 
         if region_name:
             self.aio_config_params["region_name"] = region_name
@@ -109,7 +111,9 @@ class S3Handler(AsyncStorageHandlerBase):
         if self.__memoized_conn_options:
             return self.__memoized_conn_options
 
-        self.__memoized_conn_options = {"config": AioConfig(**self.aio_config_params)}
+        self.__memoized_conn_options = {
+            "config": AioConfig(**self.aio_config_params)
+        }
 
         # This could be blank if the dev wants to use the local auth mechanisms
         # for AWS - either environment variables:
@@ -139,7 +143,9 @@ class S3Handler(AsyncStorageHandlerBase):
             self.aws_session_token = "(hidden)"
 
         if self.profile_name:
-            self.__memoized_conn_options["profile_name"] = str(self.profile_name)
+            self.__memoized_conn_options["profile_name"] = str(
+                self.profile_name
+            )
 
         # The endpoint_url isn't part of the configuration.
         if self.host_url:
@@ -149,7 +155,9 @@ class S3Handler(AsyncStorageHandlerBase):
     async def _validate(self) -> Optional[Awaitable]:
         """Perform any setup or validation."""
         if aioboto3 is None:
-            raise FilestorageConfigError("aioboto3 library required but not installed.")
+            raise FilestorageConfigError(
+                "aioboto3 library required but not installed."
+            )
 
         # Call this in order to populate the options
         self.__conn_options
@@ -192,7 +200,9 @@ class S3Handler(AsyncStorageHandlerBase):
                 return await self._async_exists(item, s3)
 
         try:
-            await s3.meta.client.head_object(Bucket=self.bucket_name, Key=item.url_path)
+            await s3.meta.client.head_object(
+                Bucket=self.bucket_name, Key=item.url_path
+            )
         except ClientError as err:
             if int(err.response.get("Error", {}).get("Code")) == 404:
                 return False
@@ -211,17 +221,23 @@ class S3Handler(AsyncStorageHandlerBase):
 
         return int(head["ContentLength"])
 
-    async def _async_get_accessed_time(self, item: FileItem, s3=None) -> datetime:
+    async def _async_get_accessed_time(
+        self, item: FileItem, s3=None
+    ) -> datetime:
         raise NotImplementedError(
             "get_accessed_time is not supported with the S3 handler"
         )
 
-    async def _async_get_created_time(self, item: FileItem, s3=None) -> datetime:
+    async def _async_get_created_time(
+        self, item: FileItem, s3=None
+    ) -> datetime:
         raise NotImplementedError(
             "get_created_time is not supported with the S3 handler"
         )
 
-    async def _async_get_modified_time(self, item: FileItem, s3=None) -> datetime:
+    async def _async_get_modified_time(
+        self, item: FileItem, s3=None
+    ) -> datetime:
         if s3 is None:
             # If not called with the s3 context, do it again.
             async with self.resource as s3:

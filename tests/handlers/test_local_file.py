@@ -117,7 +117,9 @@ def test_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item("test.txt")
     atime = handler.get_accessed_time("test.txt")
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_get_created_time(directory):
@@ -127,7 +129,9 @@ def test_local_file_handler_get_created_time(directory):
 
     item = handler.get_item("test.txt")
     ctime = handler.get_created_time("test.txt")
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_get_modified_time(directory):
@@ -137,7 +141,9 @@ def test_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item("test.txt")
     mtime = handler.get_modified_time("test.txt")
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 def test_local_file_handler_delete(directory):
@@ -221,7 +227,9 @@ async def test_async_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item("test.txt")
     atime = await handler.async_get_accessed_time("test.txt")
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -232,7 +240,9 @@ async def test_async_local_file_handler_get_created_time(directory):
 
     item = handler.get_item("test.txt")
     ctime = await handler.async_get_created_time("test.txt")
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -243,7 +253,9 @@ async def test_async_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item("test.txt")
     mtime = await handler.async_get_modified_time("test.txt")
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -292,7 +304,9 @@ async def test_async_to_sync_local_file_handler_get_accessed_time(directory):
 
     item = handler.get_item("test.txt")
     atime = handler.get_accessed_time("test.txt")
-    assert atime == datetime.fromtimestamp(os.path.getatime(handler.local_path(item)))
+    assert atime == datetime.fromtimestamp(
+        os.path.getatime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -303,7 +317,9 @@ async def test_async_to_sync_local_file_handler_get_created_time(directory):
 
     item = handler.get_item("test.txt")
     ctime = handler.get_created_time("test.txt")
-    assert ctime == datetime.fromtimestamp(os.path.getctime(handler.local_path(item)))
+    assert ctime == datetime.fromtimestamp(
+        os.path.getctime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -314,7 +330,9 @@ async def test_async_to_sync_local_file_handler_get_modified_time(directory):
 
     item = handler.get_item("test.txt")
     mtime = handler.get_modified_time("test.txt")
-    assert mtime == datetime.fromtimestamp(os.path.getmtime(handler.local_path(item)))
+    assert mtime == datetime.fromtimestamp(
+        os.path.getmtime(handler.local_path(item))
+    )
 
 
 @pytest.mark.asyncio
@@ -330,7 +348,9 @@ async def test_async_to_sync_local_file_handler_delete(directory):
 
 @pytest.mark.asyncio
 async def test_async_local_file_handler_try_save_subfolder(directory, store):
-    store.handler = AsyncLocalFileHandler(base_path=directory, auto_make_dir=True)
+    store.handler = AsyncLocalFileHandler(
+        base_path=directory, auto_make_dir=True
+    )
     handler = store / "folder" / "subfolder"
 
     await handler.async_save_data(filename="test.txt", data=b"contents")
@@ -344,9 +364,15 @@ async def test_async_local_file_handler_try_save_subfolder(directory, store):
 async def test_async_local_file_save_same_filename(directory):
     handler = AsyncLocalFileHandler(base_path=directory)
 
-    first = await handler.async_save_data(filename="test.txt", data=b"contents 1")
-    second = await handler.async_save_data(filename="test.txt", data=b"contents 2")
-    third = await handler.async_save_data(filename="test.txt", data=b"contents 3")
+    first = await handler.async_save_data(
+        filename="test.txt", data=b"contents 1"
+    )
+    second = await handler.async_save_data(
+        filename="test.txt", data=b"contents 2"
+    )
+    third = await handler.async_save_data(
+        filename="test.txt", data=b"contents 3"
+    )
 
     assert first == "test.txt"
     assert second == "test-1.txt"
@@ -362,7 +388,9 @@ async def test_async_local_file_save_same_filename(directory):
 
 
 def test_async_only_save(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.save_data(filename="test.txt", data=b"contents")
@@ -371,7 +399,9 @@ def test_async_only_save(directory):
 
 
 def test_async_only_exists(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.exists(filename="test.txt")
@@ -381,7 +411,9 @@ def test_async_only_exists(directory):
 
 @pytest.mark.asyncio
 async def test_async_only_get_size(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.get_size(filename="test.txt")
@@ -391,7 +423,9 @@ async def test_async_only_get_size(directory):
 
 @pytest.mark.asyncio
 async def test_async_only_get_accessed_time(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.get_accessed_time(filename="test.txt")
@@ -401,7 +435,9 @@ async def test_async_only_get_accessed_time(directory):
 
 @pytest.mark.asyncio
 async def test_async_only_get_created_time(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.get_created_time(filename="test.txt")
@@ -411,7 +447,9 @@ async def test_async_only_get_created_time(directory):
 
 @pytest.mark.asyncio
 async def test_async_only_get_modified_time(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.get_modified_time(filename="test.txt")
@@ -420,7 +458,9 @@ async def test_async_only_get_modified_time(directory):
 
 
 def test_async_only_delete(directory):
-    handler = AsyncLocalFileHandler(base_path=directory, allow_sync_methods=False)
+    handler = AsyncLocalFileHandler(
+        base_path=directory, allow_sync_methods=False
+    )
 
     with pytest.raises(RuntimeError) as err:
         handler.delete(filename="test.txt")

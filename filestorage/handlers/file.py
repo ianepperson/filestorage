@@ -116,7 +116,9 @@ class LocalFileHandler(StorageHandlerBase):
             if not self._exists(item):
                 return item
         else:
-            raise RuntimeError(f"Cannot get unique name for file {basename}{ext}")
+            raise RuntimeError(
+                f"Cannot get unique name for file {basename}{ext}"
+            )
 
 
 def os_wrap(fn: utils.SyncCallable) -> utils.AsyncCallable:
@@ -220,7 +222,9 @@ class AsyncLocalFileHandler(LocalFileHandler, AsyncStorageHandlerBase):
             if not await self._async_exists(item):
                 return item
         else:
-            raise RuntimeError(f"Cannot get unique name for file {basename}{ext}")
+            raise RuntimeError(
+                f"Cannot get unique name for file {basename}{ext}"
+            )
 
     def _save(self, item: FileItem) -> str:
         if not self.allow_sync_methods:
