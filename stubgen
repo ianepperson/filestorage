@@ -1,7 +1,0 @@
-# Use the mypy stubgen tool to generate the stub files automatically
-
-stubgen --output . -p filestorage
-
-# Clean up the resulting files with black
-
-black --line-length=79 --include "\.pyi$" filestorage

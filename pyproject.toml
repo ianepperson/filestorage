@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "filestorage"
+version = "0.1.0"
+description = "Save uploaded files in configurable stores"
+authors = ["Ian Epperson <ian@epperson.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = true
+
+[tool.poetry.dependencies]
+python = "^3.8"
+asgiref = "^3.8.1"
+
+aiofiles = { version = "^24.1.0", optional = true }
+aioboto3 = { version = "^13.1.1", optional = true }
+
+
+[tool.poetry.extras]
+aio_file = ["aiofiles"]
+s3 = ["aioboto3"]
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.2"
+mock = "^5.1.0"
+pytest-mock = "^3.14.0"
+pytest-asyncio = "^0.23.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
+target-version = ['py38']
+include = '\.pyi?$'
+
+[tool.poe.tasks]
+# https://github.com/nat-n/poethepoet
+# > pip install poe
+
+    [tool.poe.tasks.test]
+    cmd="pytest"
+    help="Run all tests"
+
+    [tool.poe.tasks.black]
+    cmd = 'black filestorage'
+    help="Refomat all files with Black"
+
+    [tool.poe.tasks.stubgen]
+    # No longer needed
+    cmd = 'echo no longer supported'
+    # cmd = 'stubgen --output . -p filestorage'
+    help="Create the old-school stub files for Python 3.4"
