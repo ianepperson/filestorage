@@ -149,8 +149,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """Assert that given file size is equal to the anticipated size."""
         assert self._get_size(FileItem(filename=filename, path=path)) == size
 
-    async def _async_get_accessed_time(self, item: FileItem) -> bool:
-        """Indicate if the given file access time is equal to the anticipated time."""
+    async def _async_get_accessed_time(self, item: FileItem) -> datetime:
+        """Get the last access time for the given file"""
         return self.files[item.url_path].atime
 
     def assert_get_accessed_time(
@@ -162,8 +162,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
             == date
         )
 
-    async def _async_get_created_time(self, item: FileItem) -> bool:
-        """Indicate if the given file creation time is equal to the anticipated time."""
+    async def _async_get_created_time(self, item: FileItem) -> datetime:
+        """Get the created time"""
         return self.files[item.url_path].ctime
 
     def assert_get_created_time(
@@ -175,8 +175,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
             == date
         )
 
-    async def _async_get_modified_time(self, item: FileItem) -> bool:
-        """Indicate if the given file modification time is equal to the anticipated time."""
+    async def _async_get_modified_time(self, item: FileItem) -> datetime:
+        """Return the last modified time"""
         return self.files[item.url_path].mtime
 
     def assert_get_modified_time(
