@@ -8,7 +8,7 @@ readme = "README.md"
 package-mode = true
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 asgiref = "^3.8.1"
 
 aiofiles = { version = "^24.1.0", optional = true }
@@ -22,6 +22,7 @@ s3 = ["aioboto3"]
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
+mypy = "^1.15.0"
 
 
 [tool.poetry.group.test.dependencies]
@@ -36,7 +37,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 79
-target-version = ['py38']
+target-version = ['py39']
 include = '\.pyi?$'
 
 [tool.poe.tasks]
