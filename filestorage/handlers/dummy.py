@@ -4,7 +4,7 @@ from typing import Dict, Tuple, NamedTuple, Optional
 from filestorage import FileItem, StorageHandlerBase, AsyncStorageHandlerBase
 
 # A file kept in memory, with file system like properties.
-_file = NamedTuple(
+File = NamedTuple(
     "File",
     [
         ("contents", bytes),
@@ -28,7 +28,7 @@ class DummyHandler(StorageHandlerBase):
         # Store files where the key is the url path and the value is
         # a named tuple containing the contents of the file, the access
         # time, the creation time, and the time of last modification.
-        self.files: Dict[str, _file] = {}
+        self.files: Dict[str, File] = {}
         self.last_save: Optional[FileItem] = None
         self.last_save_contents: bytes = b""
         self.last_delete: Optional[FileItem] = None
@@ -104,7 +104,7 @@ class DummyHandler(StorageHandlerBase):
         """
         with item as f:
             self.last_save_contents = f.read()
-            self.files[item.url_path] = _file(
+            self.files[item.url_path] = File(
                 self.last_save_contents,
                 datetime.now(),
                 datetime.now(),
@@ -206,7 +206,7 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """
         async with item as f:
             self.last_save_contents = await f.read()
-            self.files[item.url_path] = _file(
+            self.files[item.url_path] = File(
                 self.last_save_contents,
                 datetime.now(),
                 datetime.now(),
