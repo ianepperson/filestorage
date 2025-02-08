@@ -13,7 +13,7 @@ class SyncReader:
             self._reader = utils.any_to_sync(self.data.read)
             self._seeker = utils.any_to_sync(self.data.seek)
 
-    def seek(self, offset: int, whence: int = 0) -> int:
+    def seek(self, offset: int) -> int:
         if self.data is None:
             return -1
         return self._seeker(offset)
@@ -34,7 +34,7 @@ class AsyncReader:
             self._reader = utils.any_to_async(self.data.read)
             self._seeker = utils.any_to_async(self.data.seek)
 
-    async def seek(self, offset: int, whence: int = 0) -> int:
+    async def seek(self, offset: int) -> int:
         if self.data is None:
             return -1
         return await self._seeker(offset)
