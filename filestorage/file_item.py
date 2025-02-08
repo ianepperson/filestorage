@@ -95,7 +95,7 @@ class FileItem(NamedTuple):
         reader.seek(0)
         return reader
 
-    def __exit__(*args, **kwargs):
+    def __exit__(self, *_, **__):
         pass
 
     async def __aenter__(self):
@@ -103,5 +103,5 @@ class FileItem(NamedTuple):
         await reader.seek(0)
         return reader
 
-    async def __aexit__(*args, **kwargs):
+    async def __aexit__(self, *_, **__):
         pass
