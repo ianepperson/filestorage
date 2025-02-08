@@ -16,7 +16,12 @@ _file = NamedTuple(
 
 
 class DummyHandler(StorageHandlerBase):
-    """Dummy class for testing."""
+    """
+    Dummy class for testing.
+
+    Stores all the data in memory in a Python dictionary. Does not persist any
+    files to any permanent storage.
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -33,6 +38,7 @@ class DummyHandler(StorageHandlerBase):
         self.validated = True
 
     def get_file_key(self, item: FileItem) -> FileItem:
+        """Provide a copy of the item without any file data."""
         return item.copy(data=None)
 
     def _exists(self, item: FileItem) -> bool:
@@ -124,11 +130,17 @@ class DummyHandler(StorageHandlerBase):
 
 
 class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
-    """Dummy class for testing."""
+    """
+    Dummy class for testing.
+
+    Stores all the data in memory in a Python dictionary. Does not persist any
+    files to any permanent storage.
+    """
 
     allow_async = True
 
     def get_file_key(self, item: FileItem) -> FileItem:
+        """Provide a copy of the item without any file data."""
         return item.copy(data=None)
 
     async def _async_exists(self, item: FileItem) -> bool:
