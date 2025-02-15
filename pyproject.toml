@@ -17,6 +17,7 @@ s3 = ["aioboto3>=13.1.1,<14"]
 [dependency-groups]
 dev = [
     "black>=24.8.0,<25",
+    "flake8>=7.1.1",
     "mypy>=1.15.0,<2",
     "types-aioboto3>=13.4.0",
 ]
