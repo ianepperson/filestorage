@@ -3,7 +3,7 @@ name = "filestorage"
 version = "0.2.0"
 description = "Save uploaded files in configurable stores"
 authors = [{ name = "Ian Epperson", email = "ian@epperson.com" }]
-requires-python = "~=3.9"
+requires-python = ">=3.9"
 readme = "README.md"
 license = "MIT"
 dependencies = [
@@ -19,6 +19,7 @@ dev = [
     "black>=24.8.0,<25",
     "flake8>=7.1.1",
     "mypy>=1.15.0,<2",
+    "pytest-cov>=6.0.0",
     "types-aioboto3>=13.4.0",
 ]
 test = [
@@ -47,7 +48,7 @@ target-version = ['py39']
 include = '\.pyi?$'
 
 [tool.poe.tasks.test]
-    cmd="pytest"
+    cmd="pytest --cov"
     help="Run all tests"
 
 [tool.poe.tasks.black]
