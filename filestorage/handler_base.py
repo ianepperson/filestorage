@@ -21,7 +21,6 @@ from .exceptions import FilestorageConfigError
 from .filter_base import FilterBase
 
 if TYPE_CHECKING:
-    import cgi
     from .storage_container import StorageContainer
 
 
@@ -231,8 +230,12 @@ class StorageHandlerBase(ABC):
 
         return self._save(item)
 
-    def save_field(self, field: "cgi.FieldStorage") -> str:
-        """Save a file stored in a CGI field."""
+    def save_field(self, field) -> str:
+        """Save a file stored in a CGI field.
+
+        Originally created for a cgi.FieldStorage object.
+        field must have a `file` and `filename` property
+        """
         if not field.file:
             raise RuntimeError("No file data in the field")
 
@@ -406,8 +409,12 @@ class AsyncStorageHandlerBase(StorageHandlerBase, ABC):
             filename = new_filename
         return filename
 
-    async def async_save_field(self, field: "cgi.FieldStorage") -> str:
-        """Save a file stored in a CGI field."""
+    async def async_save_field(self, field) -> str:
+        """Save a file stored in a CGI field.
+
+        Originally created for a cgi.FieldStorage object.
+        field must have a `file` and `filename` property
+        """
         if not field.file:
             raise RuntimeError("No file data in the field")
 

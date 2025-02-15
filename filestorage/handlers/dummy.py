@@ -3,25 +3,32 @@ from typing import Dict, Tuple, NamedTuple, Optional
 
 from filestorage import FileItem, StorageHandlerBase, AsyncStorageHandlerBase
 
+# A file kept in memory, with file system like properties.
+File = NamedTuple(
+    "File",
+    [
+        ("contents", bytes),
+        ("atime", datetime),
+        ("ctime", datetime),
+        ("mtime", datetime),
+    ],
+)
+
 
 class DummyHandler(StorageHandlerBase):
-    """Dummy class for testing."""
+    """
+    Dummy class for testing.
+
+    Stores all the data in memory in a Python dictionary. Does not persist any
+    files to any permanent storage.
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Store files where the key is the url path and the value is
         # a named tuple containing the contents of the file, the access
         # time, the creation time, and the time of last modification.
-        self._file = NamedTuple(
-            "File",
-            [
-                ("contents", bytes),
-                ("atime", datetime),
-                ("ctime", datetime),
-                ("mtime", datetime),
-            ],
-        )
-        self.files: Dict[str, NamedTuple] = {}
+        self.files: Dict[str, File] = {}
         self.last_save: Optional[FileItem] = None
         self.last_save_contents: bytes = b""
         self.last_delete: Optional[FileItem] = None
@@ -31,6 +38,7 @@ class DummyHandler(StorageHandlerBase):
         self.validated = True
 
     def get_file_key(self, item: FileItem) -> FileItem:
+        """Provide a copy of the item without any file data."""
         return item.copy(data=None)
 
     def _exists(self, item: FileItem) -> bool:
@@ -96,7 +104,7 @@ class DummyHandler(StorageHandlerBase):
         """
         with item as f:
             self.last_save_contents = f.read()
-            self.files[item.url_path] = self._file(
+            self.files[item.url_path] = File(
                 self.last_save_contents,
                 datetime.now(),
                 datetime.now(),
@@ -122,11 +130,17 @@ class DummyHandler(StorageHandlerBase):
 
 
 class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
-    """Dummy class for testing."""
+    """
+    Dummy class for testing.
+
+    Stores all the data in memory in a Python dictionary. Does not persist any
+    files to any permanent storage.
+    """
 
     allow_async = True
 
     def get_file_key(self, item: FileItem) -> FileItem:
+        """Provide a copy of the item without any file data."""
         return item.copy(data=None)
 
     async def _async_exists(self, item: FileItem) -> bool:
@@ -147,8 +161,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """Assert that given file size is equal to the anticipated size."""
         assert self._get_size(FileItem(filename=filename, path=path)) == size
 
-    async def _async_get_accessed_time(self, item: FileItem) -> bool:
-        """Indicate if the given file access time is equal to the anticipated time."""
+    async def _async_get_accessed_time(self, item: FileItem) -> datetime:
+        """Get the last access time for the given file"""
         return self.files[item.url_path].atime
 
     def assert_get_accessed_time(
@@ -160,8 +174,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
             == date
         )
 
-    async def _async_get_created_time(self, item: FileItem) -> bool:
-        """Indicate if the given file creation time is equal to the anticipated time."""
+    async def _async_get_created_time(self, item: FileItem) -> datetime:
+        """Get the created time"""
         return self.files[item.url_path].ctime
 
     def assert_get_created_time(
@@ -173,8 +187,8 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
             == date
         )
 
-    async def _async_get_modified_time(self, item: FileItem) -> bool:
-        """Indicate if the given file modification time is equal to the anticipated time."""
+    async def _async_get_modified_time(self, item: FileItem) -> datetime:
+        """Return the last modified time"""
         return self.files[item.url_path].mtime
 
     def assert_get_modified_time(
@@ -192,7 +206,7 @@ class AsyncDummyHandler(AsyncStorageHandlerBase, DummyHandler):
         """
         async with item as f:
             self.last_save_contents = await f.read()
-            self.files[item.url_path] = self._file(
+            self.files[item.url_path] = File(
                 self.last_save_contents,
                 datetime.now(),
                 datetime.now(),

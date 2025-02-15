@@ -1,0 +1,61 @@
+[project]
+name = "filestorage"
+version = "0.2.0"
+description = "Save uploaded files in configurable stores"
+authors = [{ name = "Ian Epperson", email = "ian@epperson.com" }]
+requires-python = "~=3.9"
+readme = "README.md"
+license = "MIT"
+dependencies = [
+    "asgiref>=3.8.1,<4",
+]
+
+[project.optional-dependencies]
+aio_file = ["aiofiles>=24.1.0,<25"]
+s3 = ["aioboto3>=13.1.1,<14"]
+
+[dependency-groups]
+dev = [
+    "black>=24.8.0,<25",
+    "flake8>=7.1.1",
+    "mypy>=1.15.0,<2",
+    "types-aioboto3>=13.4.0",
+]
+test = [
+    "pytest>=8.3.2,<9",
+    "mock>=5.1.0,<6",
+    "pytest-mock>=3.14.0,<4",
+    "pytest-asyncio>=0.23.8,<0.24",
+]
+types = ["types-aiofiles>=24.1.0.20241221,<25"]
+
+[tool.uv]
+package = true
+default-groups = [
+    "dev",
+    "test",
+    "types",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 79
+target-version = ['py39']
+include = '\.pyi?$'
+
+[tool.poe.tasks.test]
+    cmd="pytest"
+    help="Run all tests"
+
+[tool.poe.tasks.black]
+    cmd = 'black filestorage'
+    help="Refomat all files with Black"
+
+[tool.poe.tasks.stubgen]
+    # No longer needed
+    cmd = 'echo no longer supported'
+    # cmd = 'stubgen --output . -p filestorage'
+    help="Create the old-school stub files for Python 3.4"

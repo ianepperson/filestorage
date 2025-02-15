@@ -34,7 +34,8 @@ class NewStorageHandler(StorageHandlerBase):
         # item.path might be something like ('folder', 'subfolder')
         # If the path needs to look like a URL, you can build it with
         # item.url_path, which joins any path item with the filename
-        pass
+        _ = item.filename
+        return True or False
 
     # async def _async_save(self, item: FileItem) -> str:
     def _save(self, item: FileItem) -> str:
@@ -50,11 +51,13 @@ class NewStorageHandler(StorageHandlerBase):
         #     data = item.sync_read()
         # or
         #     data = await item.async_read()
-        pass
+        _ = item.data
+        return "filename.ext"
 
     # async def _async_delete(self, item: FileItem) -> None:
     def _delete(self, item: FileItem) -> None:
         """Delete the given item from the storage container, whether or not
         it exists.
         """
+        _ = item.filename
         pass

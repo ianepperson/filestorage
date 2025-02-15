@@ -1,57 +1,45 @@
 import uuid
 from io import BytesIO
 from datetime import datetime
-from typing import Awaitable, Optional
+from typing import Any, Awaitable, Optional, Literal
 
 from filestorage import AsyncStorageHandlerBase, FileItem
 from filestorage.exceptions import FilestorageConfigError
 
-try:
-    # The Literal type was introduced in Python 3.8
-    from typing import Literal
-except ImportError:
-    Literal = None  # type: ignore
 
 try:
-    import aioboto3  # type: ignore
-    from botocore.exceptions import ClientError  # type: ignore
-    from aiobotocore.config import AioConfig  # type: ignore
+    import aioboto3
+    from botocore.exceptions import ClientError
+    from aiobotocore.config import AioConfig
 
-    # Typing for boto3 is a pain, and typing for aioboto3 is even worse.
-    # 'boto3-stubs[s3]' should help, but...
-    # from mypy_boto3_s3 import S3ServiceResource - doesn't provide aioboto3
-    # types.
+    ASYNC_BOTO_IMPORTED = True
 
 except ImportError:
-    aioboto3 = None
+    ASYNC_BOTO_IMPORTED = False
 
 
 class AioBotoS3ResourceContext:
+    """For better typing."""
+
     async def __aenter__(self): ...
 
-    async def __aexit__(self, exc_type: str, exc: Exception, tb): ...
+    async def __aexit__(self, *_, **__): ...
 
 
-if Literal is not None:
-    # Python 3.8 +
-    TypeACL = Literal[
-        "private",
-        "public-read",
-        "public-read-write",
-        "authenticated-read",
-        "aws-exec-read",
-        "bucket-owner-read",
-        "bucket-owner-full-control",
-        "log-delivery-write",
-    ]
+TypeACL = Literal[
+    "private",
+    "public-read",
+    "public-read-write",
+    "authenticated-read",
+    "aws-exec-read",
+    "bucket-owner-read",
+    "bucket-owner-full-control",
+    "log-delivery-write",
+]
 
-    # https://boto3.amazonaws.com/v1/documentation/api/1.9.42/guide/s3.html
-    # #changing-the-addressing-style
-    TypeAddressingStyle = Literal[None, "auto", "path", "virtual"]
-else:
-    # Python 3.7
-    TypeACL = str  # type: ignore
-    TypeAddressingStyle = Optional[str]  # type: ignore
+# https://boto3.amazonaws.com/v1/documentation/api/1.9.42/guide/s3.html
+# #changing-the-addressing-style
+TypeAddressingStyle = Literal[None, "auto", "path", "virtual"]
 
 
 class S3Handler(AsyncStorageHandlerBase):
@@ -103,7 +91,7 @@ class S3Handler(AsyncStorageHandlerBase):
         if region_name:
             self.aio_config_params["region_name"] = region_name
 
-        self.__memoized_conn_options = None
+        self.__memoized_conn_options: Optional[dict[str, Any]] = None
 
     @property
     def __conn_options(self):
@@ -112,7 +100,7 @@ class S3Handler(AsyncStorageHandlerBase):
             return self.__memoized_conn_options
 
         self.__memoized_conn_options = {
-            "config": AioConfig(**self.aio_config_params)
+            "config": AioConfig(**self.aio_config_params)  # type: ignore
         }
 
         # This could be blank if the dev wants to use the local auth mechanisms
@@ -154,7 +142,7 @@ class S3Handler(AsyncStorageHandlerBase):
 
     async def _validate(self) -> Optional[Awaitable]:
         """Perform any setup or validation."""
-        if aioboto3 is None:
+        if not ASYNC_BOTO_IMPORTED:
             raise FilestorageConfigError(
                 "aioboto3 library required but not installed."
             )
@@ -187,7 +175,7 @@ class S3Handler(AsyncStorageHandlerBase):
         async with handler.resource as s3:
             client = s3.meta.client
         """
-        return aioboto3.resource("s3", **self.__conn_options)
+        return aioboto3.resource("s3", **self.__conn_options)  # type: ignore
 
     async def get_bucket(self, resource):
         return await resource.Bucket(self.bucket_name)  # type: ignore
@@ -204,7 +192,8 @@ class S3Handler(AsyncStorageHandlerBase):
                 Bucket=self.bucket_name, Key=item.url_path
             )
         except ClientError as err:
-            if int(err.response.get("Error", {}).get("Code")) == 404:
+            error_code = err.response.get("Error", {}).get("Code")
+            if error_code is not None and int(error_code) == 404:
                 return False
             raise
         return True
@@ -224,6 +213,10 @@ class S3Handler(AsyncStorageHandlerBase):
     async def _async_get_accessed_time(
         self, item: FileItem, s3=None
     ) -> datetime:
+        _ = (
+            item,
+            s3,
+        )
         raise NotImplementedError(
             "get_accessed_time is not supported with the S3 handler"
         )
@@ -231,6 +224,10 @@ class S3Handler(AsyncStorageHandlerBase):
     async def _async_get_created_time(
         self, item: FileItem, s3=None
     ) -> datetime:
+        _ = (
+            item,
+            s3,
+        )
         raise NotImplementedError(
             "get_created_time is not supported with the S3 handler"
         )
@@ -279,6 +276,7 @@ class S3Handler(AsyncStorageHandlerBase):
             # If not called with the s3 context, do it again.
             async with self.resource as s3:
                 await self._async_delete(item, s3)
+            return
 
         file_object = await s3.Object(self.bucket_name, item.url_path)
         await file_object.delete()
