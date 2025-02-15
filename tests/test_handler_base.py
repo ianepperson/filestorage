@@ -1,4 +1,3 @@
-import cgi
 from asyncio import Future, isfuture
 from io import BytesIO
 
@@ -158,10 +157,17 @@ async def test_async_save_file():
 
 
 def test_save_field(handler):
-    headers = {"content-disposition": "attachment; filename=file.txt"}
-    field = cgi.FieldStorage(headers=headers)
-    field.file = BytesIO(b"contents")
-    handler.save_field(field)
+    class Field:
+        """Mimic old cgi.FieldStorage object."""
+
+        filename = "file.txt"
+        file = BytesIO(b"contents")
+
+    # headers = {"content-disposition": "attachment; filename=file.txt"}
+    # field = cgi.FieldStorage(headers=headers)
+    # field.file = BytesIO(b"contents")
+
+    handler.save_field(Field)
 
     item = handler.last_save
     assert item.filename == "file.txt"
